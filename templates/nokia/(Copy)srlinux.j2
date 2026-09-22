@@ -1,0 +1,206 @@
+system {
+    name {
+        host-name {{ hostname }}
+    }
+}
+
+{% for intf in interfaces %}
+interface {{ intf.name }} {
+    admin-state enable
+    subinterface 0 {
+        admin-state enable
+        ipv4 {
+            admin-state enable
+            address {{ intf.ipv4 }} {
+            }
+        }
+        ipv6 {
+            admin-state enable
+            address {{ intf.ipv6 }} {
+            }
+        }
+    }
+}
+{% endfor %}
+
+interface lo0 {
+    subinterface 0 {
+        admin-state enable
+        ipv4 {
+            admin-state enable
+            address {{ loopback.ipv4 }} {
+            }
+        }
+        ipv6 {
+            admin-state enable
+            address {{ loopback.ipv6 }} {
+            }
+        }
+    }
+}
+
+interface mgmt0 {
+    admin-state enable
+    subinterface 0 {
+        admin-state enable
+        ipv4 {
+            admin-state enable
+            dhcp-client
+        }
+        ipv6 {
+            admin-state enable
+            dhcp-client
+        }
+    }
+}
+
+routing-policy {
+{% for name, prefixes in prefix_sets.items() %}
+    prefix-set {{ name }} {
+{% for prefix in prefixes %}
+        prefix {{ prefix }} {
+            mask-length-range {{ prefix.split('/')[1] }}..{{ prefix.split('/')[1] }}
+        }
+{% endfor %}
+    }
+{% endfor %}
+
+    policy HOST-IPV4-EXPORT {
+        default-action reject
+        statement 10 {
+            match {
+                prefix {
+                    prefix-set HOST-IPV4
+                }
+            }
+            action {
+                policy-result accept
+            }
+        }
+    }
+
+    policy HOST-IPV6-EXPORT {
+        default-action reject
+        statement 10 {
+            match {
+                prefix {
+                    prefix-set HOST-IPV6
+                }
+            }
+            action {
+                policy-result accept
+            }
+        }
+    }
+
+    policy WEB-IPV4-IMPORT {
+        default-action reject
+        statement 10 {
+            match {
+                prefix {
+                    prefix-set WEB-IPV4
+                }
+            }
+            action {
+                policy-result accept
+            }
+        }
+    }
+
+    policy WEB-IPV6-IMPORT {
+        default-action reject
+        statement 10 {
+            match {
+                prefix {
+                    prefix-set WEB-IPV6
+                }
+            }
+            action {
+                policy-result accept
+            }
+        }
+    }
+}
+
+network-instance default {
+{% for intf in interfaces %}
+    interface {{ intf.name }}.0
+{% endfor %}
+    interface lo0.0
+
+{% if ospf is defined %}
+    protocols {
+        ospf {
+            instance ospfv2 {
+                admin-state enable
+                version ospf-v2
+                router-id {{ ospf.router_id }}
+                export-policy {{ ospf.ipv4_export_policy }}
+                area 0.0.0.0 {
+{% for intf in ospf.interfaces %}
+                    interface {{ intf }}
+{% endfor %}
+                }
+            }
+
+            instance ospfv3 {
+                admin-state enable
+                version ospf-v3
+                address-family ipv6-unicast
+                router-id {{ ospf.router_id }}
+                export-policy {{ ospf.ipv6_export_policy }}
+                area 0.0.0.0 {
+{% for intf in ospf.interfaces %}
+                    interface {{ intf }}
+{% endfor %}
+                }
+            }
+        }
+{% endif %}
+
+{% if bgp is defined %}
+        bgp {
+            admin-state enable
+            autonomous-system {{ bgp.local_as }}
+            router-id {{ bgp.router_id }}
+
+            afi-safi ipv4-unicast {
+                admin-state enable
+            }
+
+            afi-safi ipv6-unicast {
+                admin-state enable
+            }
+
+            group {{ bgp.group }} {
+                admin-state enable
+
+                afi-safi ipv4-unicast {
+                    admin-state enable
+                    export-policy [ HOST-IPV4-EXPORT ]
+                    import-policy [ WEB-IPV4-IMPORT ]
+                }
+
+                afi-safi ipv6-unicast {
+                    admin-state enable
+                    export-policy [ HOST-IPV6-EXPORT ]
+                    import-policy [ WEB-IPV6-IMPORT ]
+                }
+            }
+
+{% for neighbor in bgp.neighbors %}
+            neighbor {{ neighbor.address }} {
+                peer-as {{ neighbor.peer_as }}
+                peer-group {{ bgp.group }}
+            }
+{% endfor %}
+        }
+{% endif %}
+    }
+}
+
+network-instance mgmt {
+    type ip-vrf
+    admin-state enable
+    interface mgmt0.0
+}

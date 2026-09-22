@@ -1,0 +1,32 @@
+hostname: R5
+vendor: nokia
+platform: srlinux
+
+interfaces:
+  - {name: ethernet-1/1, ipv4: 10.0.35.2/30, ipv6: "2001:db8:5840:35::5/64"}
+  - {name: ethernet-1/2, ipv4: 10.0.45.2/30, ipv6: "2001:db8:5840:45::5/64"}
+  - {name: ethernet-1/3, ipv4: 192.168.100.1/24, ipv6: "2001:db8:5840:100::1/64"}
+
+loopback:
+  ipv4: 172.31.255.5/32
+  ipv6: "2001:db8:5840:ffff::5/64"
+
+bgp:
+  local_as: 65100
+  router_id: 172.31.255.5
+  group: EBGP
+  ipv4_export_policy: WEB-IPV4-EXPORT
+  ipv4_import_policy: HOST-IPV4-IMPORT
+  ipv6_export_policy: WEB-IPV6-EXPORT
+  ipv6_import_policy: HOST-IPV6-IMPORT
+  neighbors:
+    - {address: 10.0.35.1, peer_as: 65000}
+    - {address: 10.0.45.1, peer_as: 65000}
+    - {address: "2001:db8:5840:35::3", peer_as: 65000}
+    - {address: "2001:db8:5840:45::4", peer_as: 65000}
+
+prefix_sets:
+  HOST-IPV4: ["192.168.10.0/24", "192.168.20.0/24"]
+  HOST-IPV6: ["2001:db8:5840:10::/64", "2001:db8:5840:20::/64", "2001:db8:5840:30::/64"]
+  WEB-IPV4: ["192.168.100.0/24"]
+  WEB-IPV6: ["2001:db8:5840:100::/64"]
