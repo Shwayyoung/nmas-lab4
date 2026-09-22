@@ -1,0 +1,121 @@
+no aaa root
+!
+management api http-commands
+   no shutdown
+!
+no service interface inactive port-id allocation disabled
+!
+service routing protocols model multi-agent
+!
+logging host 172.20.20.1
+logging local-interface Management0
+!
+hostname {{ hostname }}
+!
+snmp-server contact NMAS
+snmp-server location 5840-Lab
+snmp-server community {{ snmp_community | default('${SNMP_COMMUNITY}') }} ro
+snmp-server host 172.20.20.1 version 2c {{ snmp_community | default('${SNMP_COMMUNITY}') }}
+snmp-server enable traps snmp link-down
+snmp-server enable traps snmp link-up
+!
+spanning-tree mode mstp
+!
+system l1
+   unsupported speed action error
+   unsupported error-correction action error
+!
+management api gnmi
+   transport grpc default
+!
+management api netconf
+   transport ssh default
+!
+{% for intf in interfaces %}
+interface {{ intf.name }}
+{% if intf.description is defined %}
+   description {{ intf.description }}
+{% endif %}
+{% if intf.mode is defined and intf.mode == "routed" %}
+   no switchport
+{% endif %}
+{% if intf.ipv4 is defined %}
+   ip address {{ intf.ipv4 }}
+{% endif %}
+{% if intf.ipv6 is defined %}
+   ipv6 address {{ intf.ipv6 }}
+{% endif %}
+{% if intf.isis is defined %}
+   isis enable {{ intf.isis }}
+   isis network point-to-point
+{% endif %}
+{% if intf.ospf_area is defined %}
+   ip ospf area {{ intf.ospf_area }}
+{% endif %}
+{% if intf.ospfv3_process is defined %}
+   ipv6 ospf {{ intf.ospfv3_process }} area {{ intf.ospf_area }}
+{% endif %}
+!
+{% endfor %}
+interface Loopback0
+   description ROUTER_ID
+   ip address {{ loopback.ipv4 }}
+   ipv6 address {{ loopback.ipv6 }}
+   ip ospf area 0.0.0.0
+   ipv6 ospf {{ routing.ospf.process }} area 0.0.0.0
+!
+interface Management0
+   ip address {{ management.ipv4 }}
+   ipv6 address {{ management.ipv6 }}
+!
+ip routing
+!
+{% for name, entries in routing.ipv4_prefix_lists.items() %}
+ip prefix-list {{ name }}
+{% for entry in entries %}
+   {{ entry }}
+{% endfor %}
+!
+{% endfor %}
+{% for name, entries in routing.ipv6_prefix_lists.items() %}
+ipv6 prefix-list {{ name }}
+{% for entry in entries %}
+   {{ entry }}
+{% endfor %}
+!
+{% endfor %}
+{% for rm in routing.route_maps %}
+route-map {{ rm.name }} {{ rm.action }} {{ rm.sequence }}
+   match {{ rm.match }}
+!
+{% endfor %}
+ipv6 unicast-routing
+!
+ip route 0.0.0.0/0 {{ management.gateway_ipv4 }}
+!
+ipv6 route ::/0 {{ management.gateway_ipv6 }}
+!
+router isis {{ routing.isis.process }}
+   net {{ routing.isis.net }}
+   is-type level-2
+   redistribute ospfv3 match external
+   !
+   address-family ipv6 unicast
+!
+router ospf {{ routing.ospf.process }}
+   router-id {{ routing.router_id }}
+   redistribute rip
+   max-lsa 12000
+!
+ipv6 router ospf {{ routing.ospf.process }}
+   router-id {{ routing.router_id }}
+   redistribute isis level-2 route-map ISIS-TO-OSPFV3
+!
+router rip
+{% for network in routing.rip.networks %}
+   network {{ network }}
+{% endfor %}
+   redistribute ospf match external
+   no shutdown
+!
+end

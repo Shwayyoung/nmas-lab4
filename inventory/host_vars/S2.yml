@@ -1,0 +1,117 @@
+hostname: S2
+vendor: arista
+platform: ceos
+
+dhcp_relay_information_option: true
+logging_trap: critical
+logging_host: 172.20.20.1
+
+management:
+  ipv4: 172.20.20.13/24
+  ipv6: 3fff:172:20:20::d/64
+  gateway_ipv4: 172.20.20.1
+  gateway_ipv6: 3fff:172:20:20::1
+
+vlans:
+  - id: 10
+    name: VLAN10
+
+  - id: 20
+    name: VLAN20
+
+  - id: 30
+    name: VLAN30
+
+  - id: 999
+    name: RIP_TRANSIT
+
+interfaces:
+  - name: Ethernet1
+    description: H3_VLAN10
+    mode: access
+    access_vlan: 10
+
+  - name: Ethernet2
+    description: H4_VLAN30_IPV6_ONLY
+    mode: access
+    access_vlan: 30
+
+  - name: Ethernet3
+    description: TRUNK_TO_S1
+    mode: trunk
+    allowed_vlans: "10,20,30,999"
+
+  - name: Ethernet4
+    description: L3_TO_R2
+    mode: routed
+    ipv4: 10.0.102.1/30
+    ipv6: 2001:db8:5840:102::1/64
+    isis: ACCESS
+    isis_p2p: true
+
+loopback:
+  ipv4: 172.31.255.12/24
+  ipv6: 2001:db8:5840:ffff::12/64
+
+svis:
+  - vlan: 10
+    description: GATEWAY_VLAN10
+    ipv4: 192.168.10.3/24
+    ipv6: 2001:db8:5840:10::3/64
+    ip_helper: 172.20.20.1
+    isis: ACCESS
+    isis_passive: true
+    vrrp:
+      - id: 10
+        ipv4: 192.168.10.1
+
+      - id: 110
+        ipv6: 2001:db8:5840:10::1
+
+  - vlan: 20
+    description: GATEWAY_VLAN20
+    ipv4: 192.168.20.3/24
+    ipv6: 2001:db8:5840:20::3/64
+    ip_helper: 172.20.20.1
+    isis: ACCESS
+    isis_passive: true
+    vrrp:
+      - id: 20
+        priority: 110
+        ipv4: 192.168.20.1
+
+      - id: 120
+        priority: 110
+        ipv6: 2001:db8:5840:20::1
+
+  - vlan: 30
+    description: GATEWAY_VLAN30_IPV6_ONLY
+    ipv6: 2001:db8:5840:30::3/64
+    isis: ACCESS
+    isis_passive: true
+    vrrp:
+      - id: 130
+        priority: 110
+        ipv6: 2001:db8:5840:30::1
+
+  - vlan: 999
+    description: L3_TRANSIT_TO_S1
+    ipv4: 10.0.199.2/30
+    ipv6: 2001:db8:5840:999::2/64
+    isis: ACCESS
+    isis_p2p: true
+
+routing:
+  router_id: 172.31.255.12
+
+  isis:
+    process: ACCESS
+    net: 49.0001.0000.0000.0002.00
+    level: level-2
+
+  rip:
+    networks:
+      - 10.0.102.0/30
+      - 10.0.199.0/30
+      - 192.168.10.0/24
+      - 192.168.20.0/24

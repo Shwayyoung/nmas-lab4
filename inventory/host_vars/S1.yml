@@ -1,0 +1,112 @@
+hostname: S1
+vendor: arista
+platform: ceos
+
+dhcp_relay_information_option: true
+logging_trap: critical
+logging_host: 172.20.20.1
+
+management:
+  ipv4: 172.20.20.2/24
+  ipv6: 3fff:172:20:20::2/64
+  gateway_ipv4: 172.20.20.1
+  gateway_ipv6: 3fff:172:20:20::1
+
+vlans:
+  - id: 10
+    name: VLAN10
+  - id: 20
+    name: VLAN20
+  - id: 30
+    name: VLAN30
+  - id: 999
+    name: RIP_TRANSIT
+
+interfaces:
+  - name: Ethernet1
+    description: H1_VLAN10
+    mode: access
+    access_vlan: 10
+
+  - name: Ethernet2
+    description: H2_VLAN
+    mode: access
+    access_vlan: 20
+
+  - name: Ethernet3
+    description: TRUNK_TO_S2
+    mode: trunk
+    allowed_vlans: "10,20,30,999"
+
+  - name: Ethernet4
+    description: L3_TO_R1
+    mode: routed
+    ipv4: 10.0.101.1/30
+    ipv6: 2001:db8:5840:101::1/64
+    isis: ACCESS
+    isis_p2p: true
+
+loopback:
+  ipv4: 172.31.255.11/24
+  ipv6: 2001:db8:5840:ffff::11/64
+
+svis:
+  - vlan: 10
+    description: GATEWAY_VLAN10
+    ipv4: 192.168.10.2/24
+    ipv6: 2001:db8:5840:10::2/64
+    ip_helper: 172.20.20.1
+    ip_helper_source: Management0
+    isis: ACCESS
+    isis_passive: true
+    vrrp:
+      - id: 10
+        priority: 110
+        ipv4: 192.168.10.1
+      - id: 110
+        priority: 110
+        ipv6: 2001:db8:5840:10::1
+
+  - vlan: 20
+    description: GATEWAY_VLAN20
+    ipv4: 192.168.20.2/24
+    ipv6: 2001:db8:5840:20::2/64
+    ip_helper: 172.20.20.1
+    isis: ACCESS
+    isis_passive: true
+    vrrp:
+      - id: 20
+        ipv4: 192.168.20.1
+      - id: 120
+        ipv6: 2001:db8:5840:20::1
+
+  - vlan: 30
+    description: GATEWAY_VLAN30_IPV6_ONLY
+    ipv6: 2001:db8:5840:30::2/64
+    isis: ACCESS
+    isis_passive: true
+    vrrp:
+      - id: 130
+        ipv6: 2001:db8:5840:30::1
+
+  - vlan: 999
+    description: L3_TRANSIT_TO_S2
+    ipv4: 10.0.199.1/30
+    ipv6: 2001:db8:5840:999::1/64
+    isis: ACCESS
+    isis_p2p: true
+
+routing:
+  router_id: 172.31.255.11
+
+  isis:
+    process: ACCESS
+    net: 49.0001.0000.0000.0001.00
+    level: level-2
+
+  rip:
+    networks:
+      - 10.0.101.0/30
+      - 10.0.199.0/30
+      - 192.168.10.0/24
+      - 192.168.20.0/24

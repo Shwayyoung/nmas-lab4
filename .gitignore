@@ -8,3 +8,5 @@ secrets/
 *.key
 *.pem
 credentials*
+configs/running/
+configs/generated/
