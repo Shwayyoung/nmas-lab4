@@ -1,0 +1,8 @@
+{
+  "device": "R3",
+  "timestamp": "20261019-220407",
+  "changed": true,
+  "golden": "/home/student/labs/nmas-lab4/golden/R3/R3-latest.cfg",
+  "generated": "/home/student/labs/nmas-lab4/configs/generated/R3.cfg",
+  "diff": "--- R3-golden\n+++ R3-desired\n@@ -44,12 +44,14 @@\n set / routing-policy policy WEB-IPV4-IMPORT default-action policy-result reject\n set / routing-policy policy WEB-IPV4-IMPORT statement 10 match prefix prefix-set WEB-IPV4\n set / routing-policy policy WEB-IPV4-IMPORT statement 10 action policy-result accept\n+set / routing-policy policy WEB-IPV4-IMPORT statement 10 action route-preference set 140\n set / routing-policy policy HOST-IPV6-EXPORT default-action policy-result reject\n set / routing-policy policy HOST-IPV6-EXPORT statement 10 match prefix prefix-set HOST-IPV6\n set / routing-policy policy HOST-IPV6-EXPORT statement 10 action policy-result accept\n set / routing-policy policy WEB-IPV6-IMPORT default-action policy-result reject\n set / routing-policy policy WEB-IPV6-IMPORT statement 10 match prefix prefix-set WEB-IPV6\n set / routing-policy policy WEB-IPV6-IMPORT statement 10 action policy-result accept\n+set / routing-policy policy WEB-IPV6-IMPORT statement 10 action route-preference set 140\n \n set / network-instance default interface ethernet-1/1.0\n set / network-instance default interface ethernet-1/2.0\n"
+}

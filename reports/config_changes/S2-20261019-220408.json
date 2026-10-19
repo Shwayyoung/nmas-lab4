@@ -1,0 +1,8 @@
+{
+  "device": "S2",
+  "timestamp": "20261019-220408",
+  "changed": true,
+  "golden": "/home/student/labs/nmas-lab4/golden/S2/S2-latest.cfg",
+  "generated": "/home/student/labs/nmas-lab4/configs/generated/S2.cfg",
+  "diff": "--- S2-golden\n+++ S2-desired\n@@ -17,6 +17,8 @@\n !\n snmp-server contact NMAS\n snmp-server location 5840-Lab\n+snmp-server community 5840RO ro\n+snmp-server host 172.20.20.1 version 2c 5840RO\n snmp-server enable traps snmp link-down\n snmp-server enable traps snmp link-up\n !\n"
+}

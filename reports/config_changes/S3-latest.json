@@ -1,8 +1,8 @@
 {
   "device": "S3",
-  "timestamp": "20260929-221028",
-  "changed": false,
+  "timestamp": "20261019-220408",
+  "changed": true,
   "golden": "/home/student/labs/nmas-lab4/golden/S3/S3-latest.cfg",
   "generated": "/home/student/labs/nmas-lab4/configs/generated/S3.cfg",
-  "diff": ""
+  "diff": "--- S3-golden\n+++ S3-desired\n@@ -15,6 +15,8 @@\n !\n snmp-server contact NMAS\n snmp-server location 5840-Lab\n+snmp-server community 5840RO ro\n+snmp-server host 172.20.20.1 version 2c 5840RO\n snmp-server enable traps snmp link-down\n snmp-server enable traps snmp link-up\n !\n"
 }
