@@ -485,7 +485,7 @@ def topology_api():
     try:
         with urllib.request.urlopen(
             "http://127.0.0.1:8088/api/topology",
-            timeout=5,
+            timeout=20,
         ) as response:
 
             data = json.loads(

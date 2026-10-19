@@ -21,6 +21,10 @@ bgp:
   local_as: 65000
   router_id: 172.31.255.4
   group: EBGP
+
+  ipv4_import_preference: 140
+  ipv6_import_preference: 140
+
   neighbors:
     - {address: 10.0.45.2, peer_as: 65100}
     - {address: "2001:db8:5840:45::5", peer_as: 65100}

@@ -1,0 +1,8 @@
+{
+  "device": "R1",
+  "timestamp": "20260929-221006",
+  "changed": true,
+  "golden": "/home/student/labs/nmas-lab4/golden/R1/R1-latest.cfg",
+  "generated": "/home/student/labs/nmas-lab4/configs/generated/R1.cfg",
+  "diff": "--- R1-golden\n+++ R1-desired\n@@ -37,7 +37,7 @@\n    isis network point-to-point\n !\n interface Ethernet2\n-   description L3_TO_S3\n+   description L3_TO_S30\n    no switchport\n    ip address 10.0.13.1/30\n    ipv6 address 2001:db8:5840:13::1/64\n"
+}

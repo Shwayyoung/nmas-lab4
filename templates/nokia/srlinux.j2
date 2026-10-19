@@ -40,6 +40,12 @@ set / routing-policy prefix-set {{ name }} prefix {{ prefix }} mask-length-range
 set / routing-policy policy {{ policy }} default-action policy-result reject
 set / routing-policy policy {{ policy }} statement 10 match prefix prefix-set {{ prefixset }}
 set / routing-policy policy {{ policy }} statement 10 action policy-result accept
+{% if policy == ipv4_import and bgp.ipv4_import_preference is defined %}
+set / routing-policy policy {{ policy }} statement 10 action route-preference set {{ bgp.ipv4_import_preference }}
+{% endif %}
+{% if policy == ipv6_import and bgp.ipv6_import_preference is defined %}
+set / routing-policy policy {{ policy }} statement 10 action route-preference set {{ bgp.ipv6_import_preference }}
+{% endif %}
 {% endfor %}
 {% endif %}
 

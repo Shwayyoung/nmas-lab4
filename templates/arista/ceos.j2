@@ -1,8 +1,26 @@
 no aaa root
 !
+{% if local_users is defined %}
+{% for user in local_users %}
+username {{ user.name }} privilege {{ user.privilege | default(15) }} role {{ user.role | default('network-admin') }} secret {{ user.secret_type | default('sha512') }} {{ user.secret }}
+{% endfor %}
+!
+{% endif %}
 management api http-commands
    no shutdown
 !
+{% if dhcp_server is defined %}
+dhcp server
+{% for subnet in dhcp_server.subnets %}
+   subnet {{ subnet.prefix }}
+      range {{ subnet.range_start }} {{ subnet.range_end }}
+{% if subnet.default_gateway is defined %}
+      default-gateway {{ subnet.default_gateway }}
+{% endif %}
+   !
+{% endfor %}
+!
+{% endif %}
 {% if dhcp_relay_information_option | default(false) %}
 ip dhcp relay information option
 !
@@ -25,6 +43,12 @@ hostname {{ hostname }}
 !
 snmp-server contact {{ snmp_contact | default('NMAS') }}
 snmp-server location {{ snmp_location | default('5840-Lab') }}
+{% if snmp_community is defined %}
+snmp-server community {{ snmp_community }} ro
+{% endif %}
+{% if snmp_host is defined %}
+snmp-server host {{ snmp_host }} version 2c {{ snmp_community | default('5840RO') }}
+{% endif %}
 snmp-server enable traps snmp link-down
 snmp-server enable traps snmp link-up
 !
@@ -66,6 +90,12 @@ interface {{ intf.name }}
 {% endif %}
 {% if intf.ipv4 is defined %}
    ip address {{ intf.ipv4 }}
+{% endif %}
+{% if intf.dhcp_server_ipv4 | default(false) %}
+   dhcp server ipv4
+{% endif %}
+{% if intf.dhcp_server_ipv6 | default(false) %}
+   dhcp server ipv6
 {% endif %}
 {% if intf.ipv6 is defined %}
    ipv6 address {{ intf.ipv6 }}
@@ -118,6 +148,14 @@ interface Loopback0
 {% endif %}
 {% if loopback.ipv6 is defined %}
    ipv6 address {{ loopback.ipv6 }}
+{% endif %}
+{% if loopback.isis is defined %}
+   isis enable {{ loopback.isis }}
+{% if loopback.isis_passive | default(true) %}
+   isis passive
+{% elif loopback.isis_p2p | default(false) %}
+   isis network point-to-point
+{% endif %}
 {% endif %}
 {% if loopback.ospf_area is defined %}
    ip ospf area {{ loopback.ospf_area }}

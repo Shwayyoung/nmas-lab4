@@ -4,6 +4,9 @@ platform: ceos
 
 logging_host: 172.20.20.1
 
+snmp_community: 5840RO
+snmp_host: 172.20.20.1
+
 management:
   ipv4: 172.20.20.6/24
   ipv6: 3fff:172:20:20::6/64
@@ -41,6 +44,13 @@ routing:
   router_id: 172.31.255.1
 
   ipv4_prefix_lists:
+    OSPF-TO-RIP:
+      - "seq 10 permit 192.168.100.0/24"
+
+    RIP-TO-OSPF:
+      - "seq 10 permit 192.168.10.0/24"
+      - "seq 20 permit 192.168.20.0/24"
+
     WEB-IPV4:
       - "seq 10 permit 192.168.100.0/24"
 
@@ -59,7 +69,12 @@ routing:
     - name: OSPF-TO-RIP
       action: permit
       sequence: 10
-      match: "ip address prefix-list WEB-IPV4"
+      match: "ip address prefix-list OSPF-TO-RIP"
+
+    - name: RIP-TO-OSPF
+      action: permit
+      sequence: 10
+      match: "ip address prefix-list RIP-TO-OSPF"
 
   isis:
     process: ACCESS
@@ -72,7 +87,7 @@ routing:
     process: 1
     max_lsa: 12000
     redistribute:
-      - "rip"
+      - "rip route-map RIP-TO-OSPF"
     redistribute_ipv6:
       - "isis level-2 route-map ISIS-TO-OSPFV3"
 
@@ -80,4 +95,4 @@ routing:
     networks:
       - 10.0.101.0/30
     redistribute:
-      - "ospf match external"
+      - "ospf match external route-map OSPF-TO-RIP"

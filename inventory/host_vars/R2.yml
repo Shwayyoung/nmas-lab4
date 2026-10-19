@@ -5,11 +5,38 @@ platform: ceos
 logging_trap: critical
 logging_host: 172.20.20.1
 
+snmp_community: 5840RO
+snmp_host: 172.20.20.1
+
 management:
   ipv4: 172.20.20.4/24
   ipv6: 3fff:172:20:20::4/64
   gateway_ipv4: 172.20.20.1
   gateway_ipv6: 3fff:172:20:20::1
+
+dhcp_server:
+  subnets:
+    - prefix: 192.168.10.0/24
+      range_start: 192.168.10.101
+      range_end: 192.168.10.254
+      default_gateway: 192.168.10.1
+
+    - prefix: 192.168.20.0/24
+      range_start: 192.168.20.101
+      range_end: 192.168.20.254
+      default_gateway: 192.168.20.1
+
+    - prefix: 2001:db8:5840:10::/64
+      range_start: 2001:db8:5840:10::101
+      range_end: 2001:db8:5840:10::ffff
+
+    - prefix: 2001:db8:5840:20::/64
+      range_start: 2001:db8:5840:20::101
+      range_end: 2001:db8:5840:20::ffff
+
+    - prefix: 2001:db8:5840:30::/64
+      range_start: 2001:db8:5840:30::101
+      range_end: 2001:db8:5840:30::ffff
 
 interfaces:
   - name: Ethernet1
@@ -19,6 +46,8 @@ interfaces:
     ipv6: 2001:db8:5840:102::2/64
     isis: ACCESS
     isis_p2p: true
+    dhcp_server_ipv4: true
+    dhcp_server_ipv6: true
 
   - name: Ethernet2
     description: L3_TO_S4
@@ -36,11 +65,20 @@ loopback:
   ospf_area: 0.0.0.0
   ospfv3_process: 1
   ospfv3_area: 0.0.0.0
+  isis: ACCESS
+  isis_passive: true
 
 routing:
   router_id: 172.31.255.2
 
   ipv4_prefix_lists:
+    OSPF-TO-RIP:
+      - "seq 10 permit 192.168.100.0/24"
+
+    RIP-TO-OSPF:
+      - "seq 10 permit 192.168.10.0/24"
+      - "seq 20 permit 192.168.20.0/24"
+
     WEB-IPV4:
       - "seq 10 permit 192.168.100.0/24"
 
@@ -60,10 +98,20 @@ routing:
       sequence: 10
       match: "ipv6 address prefix-list ISIS-V6-HOSTS"
 
+    - name: OSPF-TO-RIP
+      action: permit
+      sequence: 10
+      match: "ip address prefix-list OSPF-TO-RIP"
+
     - name: OSPFV3-TO-ISIS
       action: permit
       sequence: 10
       match: "ipv6 address prefix-list OSPFV3-TO-ISIS"
+
+    - name: RIP-TO-OSPF
+      action: permit
+      sequence: 10
+      match: "ip address prefix-list RIP-TO-OSPF"
 
   isis:
     process: ACCESS
@@ -76,7 +124,7 @@ routing:
     process: 1
     max_lsa: 12000
     redistribute:
-      - "rip"
+      - "rip route-map RIP-TO-OSPF"
     redistribute_ipv6:
       - "isis level-2 route-map ISIS-TO-OSPFV3"
 
@@ -84,4 +132,4 @@ routing:
     networks:
       - 10.0.102.0/30
     redistribute:
-      - "ospf match external"
+      - "ospf match external route-map OSPF-TO-RIP"

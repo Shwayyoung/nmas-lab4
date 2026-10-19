@@ -5,6 +5,9 @@ platform: ceos
 logging_trap: critical
 logging_host: 172.20.20.1
 
+snmp_community: 5840RO
+snmp_host: 172.20.20.1
+
 management:
   ipv4: 172.20.20.8/24
   ipv6: 3fff:172:20:20::8/64
