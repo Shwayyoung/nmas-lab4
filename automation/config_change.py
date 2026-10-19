@@ -9,9 +9,7 @@ import json
 from pathlib import Path
 from datetime import datetime, timezone
 
-BASE_DIR = Path(
-    "/home/student/labs/nmas-lab4"
-)
+BASE_DIR = Path(__file__).resolve().parents[1]
 
 RENDER_SCRIPT = (
     BASE_DIR
