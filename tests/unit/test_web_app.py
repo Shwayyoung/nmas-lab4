@@ -13,7 +13,29 @@ def client(tmp_path, monkeypatch):
     host_vars = tmp_path / "inventory" / "host_vars"
     host_vars.mkdir(parents=True)
 
+    reports = tmp_path / "reports"
+    reports.mkdir()
+
+    health_dir = reports / "health"
+    health_dir.mkdir()
+
+    config_changes_dir = reports / "config_changes"
+    config_changes_dir.mkdir()
+
     monkeypatch.setattr(web_app, "HOST_VARS", host_vars)
+
+    # Isolate report paths from the real Lab4 environment.
+    monkeypatch.setattr(
+        web_app,
+        "HEALTH_REPORT",
+        health_dir / "health-latest.json",
+    )
+
+    monkeypatch.setattr(
+        web_app,
+        "CONFIG_CHANGE_DIR",
+        config_changes_dir,
+    )
 
     web_app.app.config.update(TESTING=True)
 
