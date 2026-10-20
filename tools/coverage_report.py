@@ -4,7 +4,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 REPORT = ROOT / "reports" / "coverage.json"
-
+TEST_MAPPING = ROOT / "tests" / "module_tests.json"
 
 def get_functions(source_file):
     tree = ast.parse(source_file.read_text(encoding="utf-8"))
@@ -61,6 +61,39 @@ def main():
         analyze_module(name, info)
         for name, info in sorted(data["files"].items())
     ]
+
+    mapping = json.loads(
+        TEST_MAPPING.read_text(encoding="utf-8")
+    )
+
+    for module in modules:
+        name = module["module"]
+        test_path = mapping.get(name)
+
+        module["test_file"] = test_path
+        module["has_unit_tests"] = bool(
+            test_path
+            and (ROOT / test_path).is_file()
+        )
+
+    tested_count = sum(
+        module["has_unit_tests"] for module in modules
+    )
+
+    print("\n=== MODULE TEST COVERAGE ===")
+
+    for module in modules:
+        status = (
+            "TESTED" if module["has_unit_tests"]
+            else "NOT TESTED"
+        )
+        print(f"{module['module']}: {status}")
+
+    print(
+        f"Module Test Coverage: "
+        f"{tested_count}/{len(modules)} "
+        f"({100 * tested_count / len(modules):.2f}%)"
+    )
 
     covered_modules = sum(m["tested"] for m in modules)
     total_modules = len(modules)

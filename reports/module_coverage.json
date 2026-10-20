@@ -46,7 +46,9 @@
         "total": 29,
         "coverage": 3.45
       }
-    ]
+    ],
+    "test_file": "tests/unit/test_config_change.py",
+    "has_unit_tests": true
   },
   {
     "module": "automation/health_check.py",
@@ -173,7 +175,9 @@
         "total": 34,
         "coverage": 2.94
       }
-    ]
+    ],
+    "test_file": "tests/unit/test_health_check.py",
+    "has_unit_tests": true
   },
   {
     "module": "automation/interface_control.py",
@@ -252,13 +256,17 @@
         "total": 7,
         "coverage": 14.29
       }
-    ]
+    ],
+    "test_file": "tests/unit/test_interface_control.py",
+    "has_unit_tests": true
   },
   {
     "module": "automation/render_config.py",
     "tested": true,
     "coverage": 100.0,
-    "functions": []
+    "functions": [],
+    "test_file": "tests/unit/test_render_config.py",
+    "has_unit_tests": true
   },
   {
     "module": "automation/rotate_password.py",
@@ -361,7 +369,9 @@
         "total": 24,
         "coverage": 4.17
       }
-    ]
+    ],
+    "test_file": "tests/unit/test_rotate_password.py",
+    "has_unit_tests": true
   },
   {
     "module": "automation/save_golden.py",
@@ -392,7 +402,9 @@
         "total": 22,
         "coverage": 4.55
       }
-    ]
+    ],
+    "test_file": null,
+    "has_unit_tests": false
   },
   {
     "module": "web/app.py",
@@ -513,7 +525,9 @@
         "total": 3,
         "coverage": 100.0
       }
-    ]
+    ],
+    "test_file": "tests/unit/test_web_app.py",
+    "has_unit_tests": true
   },
   {
     "module": "web/netbox_bridge.py",
@@ -616,6 +630,8 @@
         "total": 9,
         "coverage": 11.11
       }
-    ]
+    ],
+    "test_file": "tests/unit/test_netbox_bridge.py",
+    "has_unit_tests": true
   }
 ]

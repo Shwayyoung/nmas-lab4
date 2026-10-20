@@ -1,0 +1,10 @@
+{
+  "automation/config_change.py": "tests/unit/test_config_change.py",
+  "automation/health_check.py": "tests/unit/test_health_check.py",
+  "automation/interface_control.py": "tests/unit/test_interface_control.py",
+  "automation/render_config.py": "tests/unit/test_render_config.py",
+  "automation/rotate_password.py": "tests/unit/test_rotate_password.py",
+  "automation/save_golden.py": "tests/unit/test_save_golden.py",
+  "web/app.py": "tests/unit/test_web_app.py",
+  "web/netbox_bridge.py": "tests/unit/test_netbox_bridge.py"
+}
