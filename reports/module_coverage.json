@@ -1,0 +1,621 @@
+[
+  {
+    "module": "automation/config_change.py",
+    "tested": true,
+    "coverage": 65.62,
+    "functions": [
+      {
+        "name": "get_device_names",
+        "covered": 8,
+        "total": 8,
+        "coverage": 100.0
+      },
+      {
+        "name": "render_device",
+        "covered": 9,
+        "total": 9,
+        "coverage": 100.0
+      },
+      {
+        "name": "get_golden_config",
+        "covered": 5,
+        "total": 5,
+        "coverage": 100.0
+      },
+      {
+        "name": "compare_configs",
+        "covered": 7,
+        "total": 7,
+        "coverage": 100.0
+      },
+      {
+        "name": "show_result",
+        "covered": 9,
+        "total": 9,
+        "coverage": 100.0
+      },
+      {
+        "name": "save_change_report",
+        "covered": 10,
+        "total": 10,
+        "coverage": 100.0
+      },
+      {
+        "name": "main",
+        "covered": 1,
+        "total": 29,
+        "coverage": 3.45
+      }
+    ]
+  },
+  {
+    "module": "automation/health_check.py",
+    "tested": true,
+    "coverage": 86.84,
+    "functions": [
+      {
+        "name": "normalize_ip",
+        "covered": 4,
+        "total": 4,
+        "coverage": 100.0
+      },
+      {
+        "name": "netbox_get",
+        "covered": 6,
+        "total": 6,
+        "coverage": 100.0
+      },
+      {
+        "name": "get_device",
+        "covered": 20,
+        "total": 20,
+        "coverage": 100.0
+      },
+      {
+        "name": "get_all_device_names",
+        "covered": 13,
+        "total": 13,
+        "coverage": 100.0
+      },
+      {
+        "name": "detect_platform",
+        "covered": 7,
+        "total": 7,
+        "coverage": 100.0
+      },
+      {
+        "name": "check_ping",
+        "covered": 4,
+        "total": 4,
+        "coverage": 100.0
+      },
+      {
+        "name": "connect",
+        "covered": 6,
+        "total": 6,
+        "coverage": 100.0
+      },
+      {
+        "name": "read_channel",
+        "covered": 7,
+        "total": 7,
+        "coverage": 100.0
+      },
+      {
+        "name": "run_shell_command",
+        "covered": 21,
+        "total": 21,
+        "coverage": 100.0
+      },
+      {
+        "name": "check_arista",
+        "covered": 15,
+        "total": 15,
+        "coverage": 100.0
+      },
+      {
+        "name": "check_nokia",
+        "covered": 12,
+        "total": 12,
+        "coverage": 100.0
+      },
+      {
+        "name": "check_device",
+        "covered": 23,
+        "total": 23,
+        "coverage": 100.0
+      },
+      {
+        "name": "parse_bgp_health",
+        "covered": 25,
+        "total": 26,
+        "coverage": 96.15
+      },
+      {
+        "name": "parse_route_health",
+        "covered": 14,
+        "total": 14,
+        "coverage": 100.0
+      },
+      {
+        "name": "parse_cpu_health",
+        "covered": 22,
+        "total": 22,
+        "coverage": 100.0
+      },
+      {
+        "name": "calculate_overall",
+        "covered": 7,
+        "total": 7,
+        "coverage": 100.0
+      },
+      {
+        "name": "influx_query",
+        "covered": 7,
+        "total": 7,
+        "coverage": 100.0
+      },
+      {
+        "name": "get_cpu_from_influx",
+        "covered": 16,
+        "total": 17,
+        "coverage": 94.12
+      },
+      {
+        "name": "save_report",
+        "covered": 8,
+        "total": 8,
+        "coverage": 100.0
+      },
+      {
+        "name": "main",
+        "covered": 1,
+        "total": 34,
+        "coverage": 2.94
+      }
+    ]
+  },
+  {
+    "module": "automation/interface_control.py",
+    "tested": true,
+    "coverage": 91.54,
+    "functions": [
+      {
+        "name": "normalize_ip",
+        "covered": 4,
+        "total": 4,
+        "coverage": 100.0
+      },
+      {
+        "name": "netbox_get",
+        "covered": 6,
+        "total": 6,
+        "coverage": 100.0
+      },
+      {
+        "name": "get_device",
+        "covered": 20,
+        "total": 20,
+        "coverage": 100.0
+      },
+      {
+        "name": "detect_platform",
+        "covered": 7,
+        "total": 7,
+        "coverage": 100.0
+      },
+      {
+        "name": "validate_interface",
+        "covered": 5,
+        "total": 5,
+        "coverage": 100.0
+      },
+      {
+        "name": "connect",
+        "covered": 6,
+        "total": 6,
+        "coverage": 100.0
+      },
+      {
+        "name": "read_channel",
+        "covered": 7,
+        "total": 7,
+        "coverage": 100.0
+      },
+      {
+        "name": "send_command",
+        "covered": 3,
+        "total": 3,
+        "coverage": 100.0
+      },
+      {
+        "name": "control_arista",
+        "covered": 19,
+        "total": 19,
+        "coverage": 100.0
+      },
+      {
+        "name": "control_nokia",
+        "covered": 15,
+        "total": 15,
+        "coverage": 100.0
+      },
+      {
+        "name": "control_interface",
+        "covered": 13,
+        "total": 13,
+        "coverage": 100.0
+      },
+      {
+        "name": "main",
+        "covered": 1,
+        "total": 7,
+        "coverage": 14.29
+      }
+    ]
+  },
+  {
+    "module": "automation/render_config.py",
+    "tested": true,
+    "coverage": 100.0,
+    "functions": []
+  },
+  {
+    "module": "automation/rotate_password.py",
+    "tested": true,
+    "coverage": 87.1,
+    "functions": [
+      {
+        "name": "write_rotation_log",
+        "covered": 7,
+        "total": 7,
+        "coverage": 100.0
+      },
+      {
+        "name": "normalize_ip",
+        "covered": 6,
+        "total": 6,
+        "coverage": 100.0
+      },
+      {
+        "name": "netbox_get",
+        "covered": 6,
+        "total": 6,
+        "coverage": 100.0
+      },
+      {
+        "name": "get_device",
+        "covered": 21,
+        "total": 21,
+        "coverage": 100.0
+      },
+      {
+        "name": "generate_password",
+        "covered": 6,
+        "total": 6,
+        "coverage": 100.0
+      },
+      {
+        "name": "connect",
+        "covered": 5,
+        "total": 5,
+        "coverage": 100.0
+      },
+      {
+        "name": "read_channel",
+        "covered": 7,
+        "total": 7,
+        "coverage": 100.0
+      },
+      {
+        "name": "send_command",
+        "covered": 3,
+        "total": 3,
+        "coverage": 100.0
+      },
+      {
+        "name": "rotate_arista",
+        "covered": 15,
+        "total": 15,
+        "coverage": 100.0
+      },
+      {
+        "name": "rotate_srlinux",
+        "covered": 17,
+        "total": 17,
+        "coverage": 100.0
+      },
+      {
+        "name": "verify_new_password",
+        "covered": 3,
+        "total": 3,
+        "coverage": 100.0
+      },
+      {
+        "name": "update_secret",
+        "covered": 26,
+        "total": 26,
+        "coverage": 100.0
+      },
+      {
+        "name": "detect_platform",
+        "covered": 7,
+        "total": 7,
+        "coverage": 100.0
+      },
+      {
+        "name": "get_all_device_names",
+        "covered": 13,
+        "total": 13,
+        "coverage": 100.0
+      },
+      {
+        "name": "rotate_one",
+        "covered": 25,
+        "total": 25,
+        "coverage": 100.0
+      },
+      {
+        "name": "main",
+        "covered": 1,
+        "total": 24,
+        "coverage": 4.17
+      }
+    ]
+  },
+  {
+    "module": "automation/save_golden.py",
+    "tested": true,
+    "coverage": 63.93,
+    "functions": [
+      {
+        "name": "fail",
+        "covered": 3,
+        "total": 3,
+        "coverage": 100.0
+      },
+      {
+        "name": "render_config",
+        "covered": 13,
+        "total": 13,
+        "coverage": 100.0
+      },
+      {
+        "name": "save_golden",
+        "covered": 10,
+        "total": 10,
+        "coverage": 100.0
+      },
+      {
+        "name": "main",
+        "covered": 1,
+        "total": 22,
+        "coverage": 4.55
+      }
+    ]
+  },
+  {
+    "module": "web/app.py",
+    "tested": true,
+    "coverage": 96.98,
+    "functions": [
+      {
+        "name": "valid_hostname",
+        "covered": 2,
+        "total": 2,
+        "coverage": 100.0
+      },
+      {
+        "name": "load_device_yaml",
+        "covered": 8,
+        "total": 8,
+        "coverage": 100.0
+      },
+      {
+        "name": "clean_list",
+        "covered": 2,
+        "total": 2,
+        "coverage": 100.0
+      },
+      {
+        "name": "index",
+        "covered": 2,
+        "total": 2,
+        "coverage": 100.0
+      },
+      {
+        "name": "new_device",
+        "covered": 95,
+        "total": 98,
+        "coverage": 96.94
+      },
+      {
+        "name": "devices",
+        "covered": 8,
+        "total": 10,
+        "coverage": 80.0
+      },
+      {
+        "name": "view_yaml",
+        "covered": 4,
+        "total": 4,
+        "coverage": 100.0
+      },
+      {
+        "name": "render_device",
+        "covered": 7,
+        "total": 7,
+        "coverage": 100.0
+      },
+      {
+        "name": "golden_device",
+        "covered": 7,
+        "total": 7,
+        "coverage": 100.0
+      },
+      {
+        "name": "view_generated",
+        "covered": 8,
+        "total": 8,
+        "coverage": 100.0
+      },
+      {
+        "name": "golden_history",
+        "covered": 8,
+        "total": 8,
+        "coverage": 100.0
+      },
+      {
+        "name": "view_golden",
+        "covered": 8,
+        "total": 9,
+        "coverage": 88.89
+      },
+      {
+        "name": "monitoring",
+        "covered": 2,
+        "total": 2,
+        "coverage": 100.0
+      },
+      {
+        "name": "topology",
+        "covered": 2,
+        "total": 2,
+        "coverage": 100.0
+      },
+      {
+        "name": "topology_api",
+        "covered": 9,
+        "total": 9,
+        "coverage": 100.0
+      },
+      {
+        "name": "health_dashboard",
+        "covered": 6,
+        "total": 6,
+        "coverage": 100.0
+      },
+      {
+        "name": "run_health_check",
+        "covered": 3,
+        "total": 3,
+        "coverage": 100.0
+      },
+      {
+        "name": "config_changes",
+        "covered": 7,
+        "total": 7,
+        "coverage": 100.0
+      },
+      {
+        "name": "run_config_changes",
+        "covered": 3,
+        "total": 3,
+        "coverage": 100.0
+      }
+    ]
+  },
+  {
+    "module": "web/netbox_bridge.py",
+    "tested": true,
+    "coverage": 90.61,
+    "functions": [
+      {
+        "name": "influx_query",
+        "covered": 12,
+        "total": 15,
+        "coverage": 80.0
+      },
+      {
+        "name": "build_interface_state_map",
+        "covered": 10,
+        "total": 10,
+        "coverage": 100.0
+      },
+      {
+        "name": "normalize_oper_state",
+        "covered": 9,
+        "total": 9,
+        "coverage": 100.0
+      },
+      {
+        "name": "get_latest_interface_states",
+        "covered": 19,
+        "total": 23,
+        "coverage": 82.61
+      },
+      {
+        "name": "netbox_get",
+        "covered": 14,
+        "total": 16,
+        "coverage": 87.5
+      },
+      {
+        "name": "normalize_ip",
+        "covered": 8,
+        "total": 8,
+        "coverage": 100.0
+      },
+      {
+        "name": "get_device_by_name",
+        "covered": 8,
+        "total": 8,
+        "coverage": 100.0
+      },
+      {
+        "name": "get_device_by_mgmt_ip",
+        "covered": 30,
+        "total": 39,
+        "coverage": 76.92
+      },
+      {
+        "name": "get_connected_interfaces",
+        "covered": 20,
+        "total": 20,
+        "coverage": 100.0
+      },
+      {
+        "name": "get_all_devices",
+        "covered": 3,
+        "total": 3,
+        "coverage": 100.0
+      },
+      {
+        "name": "get_netbox_topology_snapshot",
+        "covered": 42,
+        "total": 42,
+        "coverage": 100.0
+      },
+      {
+        "name": "build_topology",
+        "covered": 50,
+        "total": 54,
+        "coverage": 92.59
+      },
+      {
+        "name": "send_json",
+        "covered": 10,
+        "total": 10,
+        "coverage": 100.0
+      },
+      {
+        "name": "do_OPTIONS",
+        "covered": 6,
+        "total": 6,
+        "coverage": 100.0
+      },
+      {
+        "name": "do_GET",
+        "covered": 64,
+        "total": 65,
+        "coverage": 98.46
+      },
+      {
+        "name": "main",
+        "covered": 1,
+        "total": 9,
+        "coverage": 11.11
+      }
+    ]
+  }
+]

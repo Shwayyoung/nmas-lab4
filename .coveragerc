@@ -1,0 +1,26 @@
+[run]
+patch =
+    subprocess
+parallel = True
+include =
+    */automation/*.py
+    */web/*.py
+omit =
+    */automation/credentials.py
+
+[paths]
+automation =
+    automation/
+    /tmp/pytest-of-*/pytest-*/test_*/automation/
+web =
+    web/
+
+[report]
+show_missing = True
+skip_empty = True
+
+[html]
+directory = reports/coverage_html
+
+[xml]
+output = reports/coverage.xml

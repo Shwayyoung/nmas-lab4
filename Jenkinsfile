@@ -6,8 +6,11 @@ pipeline {
         disableConcurrentBuilds()
     }
 
-    stages {
+    environment {
+        PYTHON = '/var/lib/jenkins/venvs/nmas-lab7/bin/python'
+    }
 
+    stages {
         stage('Checkout') {
             steps {
                 checkout scm
@@ -26,7 +29,6 @@ pipeline {
             steps {
                 sh '''
                     set -e
-
                     for device in R1 R2 R3 R4 R5 S1 S2 S3 S4; do
                         echo "=== Rendering $device ==="
                         python3 automation/render_config.py "$device"
@@ -43,23 +45,61 @@ pipeline {
                 '''
             }
         }
+
+        stage('Unit Tests') {
+            steps {
+                sh '''
+                    set -e
+                    $PYTHON -m coverage erase
+                    $PYTHON -m coverage run -m pytest \
+                        tests/unit/ -v
+                '''
+            }
+        }
+
+        stage('Integration Tests') {
+            steps {
+                sh '''
+                    set -e
+                    $PYTHON -m coverage run -m pytest \
+                        tests/integration/ -v
+                '''
+            }
+        }
+
+        stage('Coverage Reports') {
+            steps {
+                sh '''
+                    set -e
+                    mkdir -p reports
+
+                    $PYTHON -m coverage combine
+                    $PYTHON -m coverage report -m
+                    $PYTHON -m coverage html
+                    $PYTHON -m coverage xml
+                    $PYTHON -m coverage json \
+                        -o reports/coverage.json
+
+                    $PYTHON tools/coverage_report.py
+                '''
+            }
+        }
     }
 
     post {
-
         always {
             archiveArtifacts(
-                artifacts: 'configs/generated/**/*.cfg,reports/config_changes/**/*.json',
+                artifacts: 'configs/generated/**/*.cfg,reports/config_changes/**/*.json,reports/coverage.xml,reports/coverage.json,reports/module_coverage.json,reports/coverage_html/**',
                 allowEmptyArchive: true
             )
         }
 
         success {
-            echo 'NMAS CI pipeline passed.'
+            echo 'NMAS Lab7 CI pipeline passed.'
         }
 
         failure {
-            echo 'NMAS CI pipeline failed.'
+            echo 'NMAS Lab7 CI pipeline failed.'
         }
     }
 }
