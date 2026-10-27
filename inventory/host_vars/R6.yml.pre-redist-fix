@@ -1,0 +1,110 @@
+hostname: R6
+vendor: arista
+platform: ceos
+
+logging_trap: critical
+logging_host: 172.20.20.1
+
+snmp_community: 5840RO
+snmp_host: 172.20.20.1
+
+management:
+  ipv4: 172.20.20.16/24
+  ipv6: 3fff:172:20:20::10/64
+  gateway_ipv4: 172.20.20.1
+  gateway_ipv6: 3fff:172:20:20::1
+
+interfaces:
+  - name: Ethernet1
+    description: L3_TO_R4
+    mode: routed
+    ipv4: 10.0.46.2/30
+    ipv6: 2001:db8:5840:46::6/64
+    ospf_area: 0.0.0.10
+    ospfv3_process: 1
+    ospfv3_area: 0.0.0.10
+
+  - name: Ethernet2
+    description: L3_TO_R7
+    mode: routed
+    ipv4: 10.0.67.1/30
+    ipv6: 2001:db8:5840:67::6/64
+    isis: ZTP
+    isis_p2p: true
+
+loopback:
+  description: ROUTER_ID
+  ipv4: 172.31.255.6/32
+  ipv6: 2001:db8:5840:ffff::6/128
+  ospf_area: 0.0.0.10
+  ospfv3_process: 1
+  ospfv3_area: 0.0.0.10
+
+routing:
+  router_id: 172.31.255.6
+
+  ipv4_prefix_lists:
+    RIP-TO-OSPF:
+      - seq 10 permit 192.168.40.0/24
+      - seq 20 permit 172.31.255.7/32
+
+    OSPF-TO-RIP:
+      - seq 10 permit 192.168.10.0/24
+      - seq 20 permit 192.168.20.0/24
+      - seq 30 permit 192.168.100.0/24
+
+  ipv6_prefix_lists:
+    ISIS-TO-OSPFV3:
+      - seq 10 permit 2001:db8:5840:40::/64
+      - seq 20 permit 2001:db8:5840:ffff::7/128
+
+    OSPFV3-TO-ISIS:
+      - seq 10 permit 2001:db8:5840:10::/64
+      - seq 20 permit 2001:db8:5840:20::/64
+      - seq 30 permit 2001:db8:5840:30::/64
+      - seq 40 permit 2001:db8:5840:100::/64
+
+  route_maps:
+    - name: RIP-TO-OSPF
+      action: permit
+      sequence: 10
+      match: ip address prefix-list RIP-TO-OSPF
+
+    - name: ISIS-TO-OSPFV3
+      action: permit
+      sequence: 10
+      match: ipv6 address prefix-list ISIS-TO-OSPFV3
+
+    - name: OSPF-TO-RIP
+      action: permit
+      sequence: 10
+      match: ip address prefix-list OSPF-TO-RIP
+
+    - name: OSPFV3-TO-ISIS
+      action: permit
+      sequence: 10
+      match: ipv6 address prefix-list OSPFV3-TO-ISIS
+
+  ospf:
+    process: 1
+    max_lsa: 12000
+    redistribute:
+      - rip route-map RIP-TO-OSPF
+
+  ospfv3:
+    process: 1
+    redistribute:
+      - isis level-2 route-map ISIS-TO-OSPFV3
+
+  rip:
+    networks:
+      - 10.0.67.0/30
+    redistribute:
+      - ospf match external route-map OSPF-TO-RIP
+
+  isis:
+    process: ZTP
+    net: 49.0001.0000.0000.0006.00
+    level: level-2
+    redistribute:
+      - ospfv3 match external route-map OSPFV3-TO-ISIS

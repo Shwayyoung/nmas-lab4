@@ -1,0 +1,54 @@
+hostname: R8
+vendor: arista
+platform: ceos
+
+logging_trap: critical
+logging_host: 172.20.20.1
+
+snmp_community: 5840RO
+snmp_host: 172.20.20.1
+
+management:
+  ipv4: 172.20.20.19/24
+  ipv6: 3fff:172:20:20::13/64
+  gateway_ipv4: 172.20.20.1
+  gateway_ipv6: 3fff:172:20:20::1
+
+interfaces:
+  - name: Ethernet1
+    description: L3_TO_R2
+    mode: routed
+    ipv4: 10.0.28.2/30
+    ipv6: 2001:db8:5840:28::8/64
+    ospf_area: 0.0.0.0
+    ospfv3_process: 1
+    ospfv3_area: 0.0.0.0
+
+  - name: Ethernet2
+    description: L2_ACCESS_TO_S5
+    mode: routed
+    ipv4: 192.168.50.1/24
+    ipv6: 2001:db8:5840:50::1/64
+    ospf_area: 0.0.0.0
+    ospfv3_process: 1
+    ospfv3_area: 0.0.0.0
+    ospf_passive: true
+    ospfv3_passive: true
+
+loopback:
+  description: ROUTER_ID
+  ipv4: 172.31.255.8/32
+  ipv6: 2001:db8:5840:ffff::8/128
+  ospf_area: 0.0.0.0
+  ospfv3_process: 1
+  ospfv3_area: 0.0.0.0
+
+routing:
+  router_id: 172.31.255.8
+
+  ospf:
+    process: 1
+    max_lsa: 12000
+
+  ospfv3:
+    process: 1

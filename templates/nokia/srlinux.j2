@@ -59,9 +59,16 @@ set / network-instance default protocols ospf instance {{ version }} admin-state
 set / network-instance default protocols ospf instance {{ version }} version {{ af }}
 set / network-instance default protocols ospf instance {{ version }} router-id {{ ospf.router_id }}
 set / network-instance default protocols ospf instance {{ version }} export-policy {{ policy }}
-{% if version == "ospfv3" %}set / network-instance default protocols ospf instance ospfv3 address-family ipv6-unicast
-{% endif %}{% for intf in ospf.interfaces %}set / network-instance default protocols ospf instance {{ version }} area 0.0.0.0 interface {{ intf }}
-{% endfor %}{% endfor %}{% endif %}
+{% if version == "ospfv3" %}
+set / network-instance default protocols ospf instance ospfv3 address-family ipv6-unicast
+{% endif %}
+{% for area in ospf.areas %}
+{% for intf in area.interfaces %}
+set / network-instance default protocols ospf instance {{ version }} area {{ area.id }} interface {{ intf }}
+{% endfor %}
+{% endfor %}
+{% endfor %}
+{% endif %}
 {% if bgp is defined %}
 set / network-instance default protocols bgp admin-state enable
 set / network-instance default protocols bgp autonomous-system {{ bgp.local_as }}

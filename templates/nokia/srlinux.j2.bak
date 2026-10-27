@@ -1,0 +1,88 @@
+set / system name host-name {{ hostname }}
+
+{% for intf in interfaces %}
+set / interface {{ intf.name }} admin-state enable
+set / interface {{ intf.name }} subinterface 0 admin-state enable
+set / interface {{ intf.name }} subinterface 0 ipv4 admin-state enable
+set / interface {{ intf.name }} subinterface 0 ipv4 address {{ intf.ipv4 }}
+set / interface {{ intf.name }} subinterface 0 ipv6 admin-state enable
+set / interface {{ intf.name }} subinterface 0 ipv6 address {{ intf.ipv6 }}
+{% endfor %}
+set / interface lo0 subinterface 0 admin-state enable
+set / interface lo0 subinterface 0 ipv4 admin-state enable
+set / interface lo0 subinterface 0 ipv4 address {{ loopback.ipv4 }}
+set / interface lo0 subinterface 0 ipv6 admin-state enable
+set / interface lo0 subinterface 0 ipv6 address {{ loopback.ipv6 }}
+set / interface mgmt0 admin-state enable
+set / interface mgmt0 subinterface 0 admin-state enable
+set / interface mgmt0 subinterface 0 ipv4 admin-state enable
+set / interface mgmt0 subinterface 0 ipv4 dhcp-client
+set / interface mgmt0 subinterface 0 ipv6 admin-state enable
+set / interface mgmt0 subinterface 0 ipv6 dhcp-client
+
+{% for name, prefixes in prefix_sets.items() %}
+{% for prefix in prefixes %}
+set / routing-policy prefix-set {{ name }} prefix {{ prefix }} mask-length-range {{ prefix.split('/')[1] }}..{{ prefix.split('/')[1] }}
+{% endfor %}
+{% endfor %}
+{% if bgp is defined %}
+{% set ipv4_export = bgp.ipv4_export_policy | default("HOST-IPV4-EXPORT") %}
+{% set ipv4_import = bgp.ipv4_import_policy | default("WEB-IPV4-IMPORT") %}
+{% set ipv6_export = bgp.ipv6_export_policy | default("HOST-IPV6-EXPORT") %}
+{% set ipv6_import = bgp.ipv6_import_policy | default("WEB-IPV6-IMPORT") %}
+
+{% for policy, prefixset in [
+    (ipv4_export, "WEB-IPV4" if ipv4_export.startswith("WEB-") else "HOST-IPV4"),
+    (ipv4_import, "WEB-IPV4" if ipv4_import.startswith("WEB-") else "HOST-IPV4"),
+    (ipv6_export, "WEB-IPV6" if ipv6_export.startswith("WEB-") else "HOST-IPV6"),
+    (ipv6_import, "WEB-IPV6" if ipv6_import.startswith("WEB-") else "HOST-IPV6")
+] %}
+set / routing-policy policy {{ policy }} default-action policy-result reject
+set / routing-policy policy {{ policy }} statement 10 match prefix prefix-set {{ prefixset }}
+set / routing-policy policy {{ policy }} statement 10 action policy-result accept
+{% if policy == ipv4_import and bgp.ipv4_import_preference is defined %}
+set / routing-policy policy {{ policy }} statement 10 action route-preference set {{ bgp.ipv4_import_preference }}
+{% endif %}
+{% if policy == ipv6_import and bgp.ipv6_import_preference is defined %}
+set / routing-policy policy {{ policy }} statement 10 action route-preference set {{ bgp.ipv6_import_preference }}
+{% endif %}
+{% endfor %}
+{% endif %}
+
+{% for intf in interfaces %}
+set / network-instance default interface {{ intf.name }}.0
+{% endfor %}
+set / network-instance default interface lo0.0
+{% if ospf is defined %}
+{% for version, af, policy in [("ospfv2","ospf-v2",ospf.ipv4_export_policy),("ospfv3","ospf-v3",ospf.ipv6_export_policy)] %}
+set / network-instance default protocols ospf instance {{ version }} admin-state enable
+set / network-instance default protocols ospf instance {{ version }} version {{ af }}
+set / network-instance default protocols ospf instance {{ version }} router-id {{ ospf.router_id }}
+set / network-instance default protocols ospf instance {{ version }} export-policy {{ policy }}
+{% if version == "ospfv3" %}set / network-instance default protocols ospf instance ospfv3 address-family ipv6-unicast
+{% endif %}{% for intf in ospf.interfaces %}set / network-instance default protocols ospf instance {{ version }} area 0.0.0.0 interface {{ intf }}
+{% endfor %}{% endfor %}{% endif %}
+{% if bgp is defined %}
+set / network-instance default protocols bgp admin-state enable
+set / network-instance default protocols bgp autonomous-system {{ bgp.local_as }}
+set / network-instance default protocols bgp router-id {{ bgp.router_id }}
+{% for af in ["ipv4-unicast","ipv6-unicast"] %}set / network-instance default protocols bgp afi-safi {{ af }} admin-state enable
+set / network-instance default protocols bgp group {{ bgp.group }} admin-state enable
+set / network-instance default protocols bgp group {{ bgp.group }} afi-safi {{ af }} admin-state enable
+{% if af == "ipv4-unicast" %}
+set / network-instance default protocols bgp group {{ bgp.group }} afi-safi {{ af }} export-policy [ {{ bgp.ipv4_export_policy | default("HOST-IPV4-EXPORT") }} ]
+set / network-instance default protocols bgp group {{ bgp.group }} afi-safi {{ af }} import-policy [ {{ bgp.ipv4_import_policy | default("WEB-IPV4-IMPORT") }} ]
+{% else %}
+set / network-instance default protocols bgp group {{ bgp.group }} afi-safi {{ af }} export-policy [ {{ bgp.ipv6_export_policy | default("HOST-IPV6-EXPORT") }} ]
+set / network-instance default protocols bgp group {{ bgp.group }} afi-safi {{ af }} import-policy [ {{ bgp.ipv6_import_policy | default("WEB-IPV6-IMPORT") }} ]
+{% endif %}
+{% endfor %}{% for n in bgp.neighbors %}set / network-instance default protocols bgp neighbor {{ n.address }} peer-as {{ n.peer_as }}
+set / network-instance default protocols bgp neighbor {{ n.address }} peer-group {{ bgp.group }}
+{% endfor %}{% endif %}
+set / network-instance mgmt type ip-vrf
+set / network-instance mgmt admin-state enable
+set / network-instance mgmt description "Management network instance"
+set / network-instance mgmt interface mgmt0.0
+set / network-instance mgmt protocols linux import-routes true
+set / network-instance mgmt protocols linux export-routes true
+set / network-instance mgmt protocols linux export-neighbors true

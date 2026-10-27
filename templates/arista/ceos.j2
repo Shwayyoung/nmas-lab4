@@ -81,6 +81,7 @@ interface {{ intf.name }}
 {% if intf.mode is defined and intf.mode == "routed" %}
    no switchport
 {% elif intf.mode is defined and intf.mode == "access" %}
+   switchport mode access
    switchport access vlan {{ intf.access_vlan }}
 {% elif intf.mode is defined and intf.mode == "trunk" %}
 {% if intf.allowed_vlans is defined %}
@@ -280,6 +281,11 @@ router isis {{ routing.isis.process }}
 {% if routing is defined and routing.ospf is defined %}
 router ospf {{ routing.ospf.process }}
    router-id {{ routing.router_id }}
+{% for intf in interfaces | default([]) %}
+{% if intf.ospf_passive | default(false) %}
+   passive-interface {{ intf.name }}
+{% endif %}
+{% endfor %}
 {% if routing.ospf.redistribute is defined %}
 {% for redist in routing.ospf.redistribute %}
    redistribute {{ redist }}
@@ -291,6 +297,11 @@ router ospf {{ routing.ospf.process }}
 {% if routing is defined and routing.ospfv3 is defined %}
 ipv6 router ospf {{ routing.ospfv3.process }}
    router-id {{ routing.router_id }}
+{% for intf in interfaces | default([]) %}
+{% if intf.ospfv3_passive | default(false) %}
+   passive-interface {{ intf.name }}
+{% endif %}
+{% endfor %}
 {% if routing.ospfv3.redistribute is defined %}
 {% for redist in routing.ospfv3.redistribute %}
    redistribute {{ redist }}
@@ -300,6 +311,11 @@ ipv6 router ospf {{ routing.ospfv3.process }}
 {% elif routing is defined and routing.ospf is defined %}
 ipv6 router ospf {{ routing.ospf.process }}
    router-id {{ routing.router_id }}
+{% for intf in interfaces | default([]) %}
+{% if intf.ospfv3_passive | default(false) %}
+   passive-interface {{ intf.name }}
+{% endif %}
+{% endfor %}
 {% if routing.ospf.redistribute_ipv6 is defined %}
 {% for redist in routing.ospf.redistribute_ipv6 %}
    redistribute {{ redist }}
