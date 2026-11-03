@@ -1,0 +1,90 @@
+    prefix-set HOST-IPV4 {
+        prefix 192.168.10.0/24 mask-length-range 24..24 {
+        }
+        prefix 192.168.20.0/24 mask-length-range 24..24 {
+        }
+        prefix 192.168.40.0/24 mask-length-range 24..24 {
+        }
+        prefix 192.168.50.0/24 mask-length-range 24..24 {
+        }
+    }
+    prefix-set HOST-IPV6 {
+        prefix 2001:db8:5840:10::/64 mask-length-range 64..64 {
+        }
+        prefix 2001:db8:5840:20::/64 mask-length-range 64..64 {
+        }
+        prefix 2001:db8:5840:30::/64 mask-length-range 64..64 {
+        }
+        prefix 2001:db8:5840:40::/64 mask-length-range 64..64 {
+        }
+        prefix 2001:db8:5840:50::/64 mask-length-range 64..64 {
+        }
+    }
+    prefix-set WEB-IPV4 {
+        prefix 192.168.100.0/24 mask-length-range 24..24 {
+        }
+    }
+    prefix-set WEB-IPV6 {
+        prefix 2001:db8:5840:100::/64 mask-length-range 64..64 {
+        }
+    }
+    policy HOST-IPV4-IMPORT {
+        default-action {
+            policy-result reject
+        }
+        statement 10 {
+            match {
+                prefix {
+                    prefix-set HOST-IPV4
+                }
+            }
+            action {
+                policy-result accept
+            }
+        }
+    }
+    policy HOST-IPV6-IMPORT {
+        default-action {
+            policy-result reject
+        }
+        statement 10 {
+            match {
+                prefix {
+                    prefix-set HOST-IPV6
+                }
+            }
+            action {
+                policy-result accept
+            }
+        }
+    }
+    policy WEB-IPV4-EXPORT {
+        default-action {
+            policy-result reject
+        }
+        statement 10 {
+            match {
+                prefix {
+                    prefix-set WEB-IPV4
+                }
+            }
+            action {
+                policy-result accept
+            }
+        }
+    }
+    policy WEB-IPV6-EXPORT {
+        default-action {
+            policy-result reject
+        }
+        statement 10 {
+            match {
+                prefix {
+                    prefix-set WEB-IPV6
+                }
+            }
+            action {
+                policy-result accept
+            }
+        }
+    }
