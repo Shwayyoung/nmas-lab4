@@ -167,39 +167,60 @@ def get_latest_interface_states(
     """
     Return latest interface states only for interfaces
     that are physically connected in NetBox.
+
+    Optimized:
+    - cEOS and SR Linux are queried separately.
+    - last() is applied before map()/group().
+    - This allows InfluxDB to retrieve only the latest
+      point from each interface series instead of
+      transforming the full time range first.
     """
 
     flux = f'''
-from(bucket: "{INFLUX_BUCKET}")
-  |> range(start: -30d)
-  |> filter(fn: (r) =>
-       r._measurement =~ /^[rs][1-5]_interface_state$/
-     )
-  |> filter(fn: (r) =>
-       r._field == "oper_status" or
-       r._field == "oper_state"
-     )
-  |> map(fn: (r) => ({{
-       _time: r._time,
-       _measurement: r._measurement,
-       _value: r._value,
+ceos =
+  from(bucket: "{INFLUX_BUCKET}")
+    |> range(start: -30d)
+    |> filter(fn: (r) =>
+         r._measurement =~ /^(r|s)[0-9]+_interface_state$/
+       )
+    |> filter(fn: (r) =>
+         r._field == "oper_status"
+       )
+    |> last()
+    |> map(fn: (r) => ({{
+         _time: r._time,
+         _measurement: r._measurement,
+         _value: r._value,
 
-       device_ip:
-         if exists r.agent_host
-         then r.agent_host
-         else r.source,
+         device_ip:
+           if exists r.agent_host then
+             r.agent_host
+           else
+             r.source,
 
-       interface:
-         if exists r.interface_name
-         then r.interface_name
-         else r["srl_nokia_interfaces:interface_name"]
-     }}))
-  |> group(columns: [
-       "device_ip",
-       "interface",
-       "_measurement"
-     ])
-  |> last()
+         interface: r.interface_name
+       }}))
+
+srl =
+  from(bucket: "{INFLUX_BUCKET}")
+    |> range(start: -30d)
+    |> filter(fn: (r) =>
+         r._measurement =~ /^r[0-9]+_interface_state$/
+       )
+    |> filter(fn: (r) =>
+         r._field == "oper_state"
+       )
+    |> last()
+    |> map(fn: (r) => ({{
+         _time: r._time,
+         _measurement: r._measurement,
+         _value: r._value,
+         device_ip: r.source,
+         interface:
+           r["srl_nokia_interfaces:interface_name"]
+       }}))
+
+union(tables: [ceos, srl])
   |> group()
   |> keep(columns: [
        "_time",
@@ -216,10 +237,6 @@ from(bucket: "{INFLUX_BUCKET}")
     if connected is None:
         snapshot = get_netbox_topology_snapshot()
         connected = snapshot["connected"]
-
-    # ------------------------------------------------------------
-    # Parse InfluxDB results
-    # ------------------------------------------------------------
 
     rows = []
 
@@ -243,18 +260,13 @@ from(bucket: "{INFLUX_BUCKET}")
         except ValueError:
             continue
 
-        # --------------------------------------------------------
-        # Ignore interfaces that have no cable in NetBox
-        # --------------------------------------------------------
-
+        # Only interfaces physically connected in NetBox.
         if device_ip not in connected:
-            
             continue
 
         if interface_name not in connected[device_ip]:
-            
             continue
-        
+
         rows.append({
             "device_ip": device_ip,
             "interface": interface_name,
@@ -548,6 +560,89 @@ def get_all_devices() -> list[dict]:
     )
 
     return data.get("results", [])
+
+
+def get_grafana_devices() -> list[dict]:
+    """
+    Return active Router/Switch devices with a primary IPv4
+    in Grafana Infinity variable format:
+
+        [
+            {"text": "R1", "value": "172.20.20.6"},
+            ...
+        ]
+    """
+
+    devices = get_all_devices()
+    result = []
+
+    for device in devices:
+        name = device.get("name")
+
+        if not name:
+            continue
+
+        status = device.get("status") or {}
+        status_value = (
+            status.get("value")
+            or status.get("label")
+            or status.get("display")
+            or ""
+        )
+
+        if str(status_value).strip().lower() != "active":
+            continue
+
+        role = device.get("role") or {}
+        role_slug = (
+            role.get("slug")
+            or ""
+        ).strip().lower()
+
+        if role_slug not in (
+            "router",
+            "switch",
+            "l3switch",
+        ):
+            continue
+
+        primary_ip4 = device.get("primary_ip4")
+        if not primary_ip4:
+            continue
+
+        address = primary_ip4.get("address")
+        if not address:
+            continue
+
+        try:
+            mgmt_ip = normalize_ip(address)
+        except ValueError:
+            continue
+
+        result.append({
+            "text": name,
+            "value": mgmt_ip,
+        })
+
+    def sort_key(item):
+        name = item["text"]
+        prefix = name[:1].upper()
+
+        try:
+            number = int(name[1:])
+        except (TypeError, ValueError):
+            number = 10**9
+
+        prefix_order = {
+            "R": 0,
+            "S": 1,
+        }.get(prefix, 2)
+
+        return (prefix_order, number, name)
+
+    result.sort(key=sort_key)
+
+    return result
 
 def get_netbox_topology_snapshot() -> dict:
     """
@@ -1076,6 +1171,46 @@ class Handler(BaseHTTPRequestHandler):
                     },
                     status=404,
                 )
+
+            except RuntimeError as exc:
+
+                self.send_json(
+                    {
+                        "error": str(exc),
+                    },
+                    status=502,
+                )
+
+            except Exception as exc:
+
+                self.send_json(
+                    {
+                        "error": f"Internal error: {exc}",
+                    },
+                    status=500,
+                )
+
+            return
+
+        # -----------------------------------------------------------
+        # /api/devices
+        #
+        # Grafana Infinity variable endpoint.
+        # Returns active Router/Switch devices as:
+        #
+        # [
+        #   {"text": "R1", "value": "172.20.20.6"},
+        #   ...
+        # ]
+        # -----------------------------------------------------------
+
+        if path == "/api/devices":
+
+            try:
+
+                devices = get_grafana_devices()
+
+                self.send_json(devices)
 
             except RuntimeError as exc:
 

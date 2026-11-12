@@ -15,6 +15,9 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 WATCH = ROOT / "automation/ztp/watch.py"
 DAY2 = ROOT / "automation/day2/configure_existing.py"
+NETBOX = ROOT / "automation/netbox/register_ztp_devices.py"
+ROTATE_PASSWORD = ROOT / "automation/rotate_password.py"
+MONITORING_SYNC = ROOT / "automation/monitoring/sync_netbox_to_telegraf.py"
 
 STATE_DIR = ROOT / "automation/day2/state"
 STATE_FILE = STATE_DIR / "full_ztp.json"
@@ -27,6 +30,9 @@ DAY2_FILES = (
     ROOT / "automation/day2/configure_r4.py",
     ROOT / "automation/day2/configure_r5.py",
     ROOT / "automation/day2/configure_existing.py",
+    ROOT / "automation/netbox/register_ztp_devices.py",
+    ROOT / "automation/rotate_password.py",
+    ROOT / "automation/monitoring/sync_netbox_to_telegraf.py",
 )
 
 def timestamp():
@@ -99,6 +105,77 @@ def ztp_ready():
     )
     return result.returncode == 0
 
+def privileged_command(command):
+    """
+    Run a command with root privileges when needed.
+
+    If Full-ZTP itself is already running as root, execute directly.
+    Otherwise use sudo while preserving the NetBox environment variables
+    required by the password-rotation and monitoring-sync scripts.
+    """
+    if os.geteuid() == 0:
+        return command
+
+    return [
+        "sudo",
+        "--preserve-env=NETBOX_URL,NETBOX_TOKEN",
+        *command,
+    ]
+
+
+def run_step(label, command, *, privileged=False):
+    """Run one post-ZTP step and raise immediately on failure."""
+    if privileged:
+        command = privileged_command(command)
+
+    print(f"[Full-ZTP] Starting {label}", flush=True)
+
+    result = subprocess.run(
+        command,
+        cwd=ROOT,
+    )
+
+    if result.returncode != 0:
+        raise RuntimeError(
+            f"{label} FAILED: exit={result.returncode}"
+        )
+
+    print(
+        f"[Full-ZTP] {label} completed successfully",
+        flush=True,
+    )
+
+
+def restart_and_verify_telegraf():
+    """Restart Telegraf so it reloads /etc/nmas-secrets and generated config."""
+    run_step(
+        "Telegraf restart",
+        ["systemctl", "restart", "telegraf"],
+        privileged=True,
+    )
+
+    time.sleep(2)
+
+    command = ["systemctl", "is-active", "--quiet", "telegraf"]
+    if os.geteuid() != 0:
+        command = ["sudo", *command]
+
+    result = subprocess.run(
+        command,
+        cwd=ROOT,
+    )
+
+    if result.returncode != 0:
+        raise RuntimeError(
+            "Telegraf health check FAILED: service is not active"
+        )
+
+    print(
+        "[Full-ZTP] Telegraf health check passed",
+        flush=True,
+    )
+
+
 def execute_day2(apply, retry):
     fingerprint = deployment_fingerprint()
     previous = load_state()
@@ -108,25 +185,31 @@ def execute_day2(apply, retry):
 
     if apply:
         if status == "SUCCESS":
-            print("[Full-ZTP] Day-2 already SUCCESS; skipping")
+            print(
+                "[Full-ZTP] Day-2 + NetBox + credentials + monitoring "
+                "already SUCCESS; skipping"
+            )
             return
 
         if status in ("FAILED", "RUNNING") and not retry:
             print(
-                f"[Full-ZTP] Previous Day-2 state: {status}. "
+                f"[Full-ZTP] Previous post-ZTP state: {status}. "
                 "Use --retry-day2 to retry."
             )
             return
 
     command = [sys.executable, str(DAY2)]
+
     if apply:
         command.append("--apply")
+
         save_state({
             "fingerprint": fingerprint,
             "status": "RUNNING",
             "started_at": timestamp(),
             "finished_at": None,
             "exit_code": None,
+            "failed_step": None,
         })
 
     print(
@@ -136,32 +219,95 @@ def execute_day2(apply, retry):
     )
 
     try:
-        result = subprocess.run(command, cwd=ROOT)
-        code = result.returncode
-    except Exception:
+        result = subprocess.run(
+            command,
+            cwd=ROOT,
+        )
+
+        if result.returncode != 0:
+            raise RuntimeError(
+                f"Day-2 FAILED: exit={result.returncode}"
+            )
+
+        print(
+            "[Full-ZTP] Day-2 completed successfully",
+            flush=True,
+        )
+
+        if not apply:
+            return
+
+        # ---------------------------------------------------------------
+        # 1. Register/update ZTP devices in NetBox.
+        # ---------------------------------------------------------------
+        run_step(
+            "NetBox registration",
+            [sys.executable, str(NETBOX)],
+        )
+
+        # ---------------------------------------------------------------
+        # 2. Fresh ContainerLab deployments may be back on vendor
+        #    bootstrap passwords even while /etc/nmas-secrets still
+        #    contains passwords from the previous deployment.
+        #
+        #    --bootstrap first tries the stored per-device secret and
+        #    falls back to ARISTA_BOOTSTRAP_PASSWORD /
+        #    NOKIA_BOOTSTRAP_PASSWORD only when required.
+        # ---------------------------------------------------------------
+        run_step(
+            "Bootstrap password rotation",
+            [
+                sys.executable,
+                str(ROTATE_PASSWORD),
+                "--all",
+                "--apply",
+                "--bootstrap",
+            ],
+            privileged=True,
+        )
+
+        # ---------------------------------------------------------------
+        # 3. Regenerate Telegraf inputs from NetBox.
+        # ---------------------------------------------------------------
+        run_step(
+            "NetBox-to-Telegraf sync",
+            [
+                sys.executable,
+                str(MONITORING_SYNC),
+            ],
+            privileged=True,
+        )
+
+        # ---------------------------------------------------------------
+        # 4. Telegraf must restart after password rotation because
+        #    systemd EnvironmentFile values are read when the process
+        #    starts. Restart also loads the newly generated input file.
+        # ---------------------------------------------------------------
+        restart_and_verify_telegraf()
+
+    except Exception as exc:
         if apply:
             state = load_state()
             state.update({
                 "status": "FAILED",
                 "finished_at": timestamp(),
-                "exit_code": None,
+                "exit_code": 1,
+                "error": str(exc),
             })
             save_state(state)
+
         raise
 
     if apply:
         state = load_state()
         state.update({
-            "status": "SUCCESS" if code == 0 else "FAILED",
+            "status": "SUCCESS",
             "finished_at": timestamp(),
-            "exit_code": code,
+            "exit_code": 0,
+            "error": None,
         })
         save_state(state)
 
-    if code:
-        print(f"[Full-ZTP] Day-2 FAILED: exit={code}")
-    else:
-        print("[Full-ZTP] Day-2 completed successfully")
 
 def main():
     parser = argparse.ArgumentParser()

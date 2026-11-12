@@ -124,6 +124,78 @@
       <div class="card shadow-sm mt-3">
 
         <div class="card-header">
+          Device Types
+        </div>
+
+        <div class="card-body">
+
+          <p>
+            <span
+              style="
+                display:inline-block;
+                width:18px;
+                height:18px;
+                background:#6c757d;
+                border:2px solid #565e64;
+                vertical-align:middle;
+                margin-right:8px;">
+            </span>
+            Host
+          </p>
+
+          <p>
+            <span
+              style="
+                display:inline-block;
+                width:18px;
+                height:18px;
+                background:#198754;
+                border:2px solid #146c43;
+                border-radius:50%;
+                vertical-align:middle;
+                margin-right:8px;">
+            </span>
+            Router
+          </p>
+
+          <p>
+            <span
+              style="
+                display:inline-block;
+                width:22px;
+                height:18px;
+                background:#4dabf7;
+                border:2px solid #339af0;
+                border-radius:5px;
+                vertical-align:middle;
+                margin-right:8px;">
+            </span>
+            Switch
+          </p>
+
+          <p class="mb-0">
+            <span
+              style="
+                display:inline-block;
+                width:22px;
+                height:18px;
+                background:#0d6efd;
+                border:2px solid #0a58ca;
+                border-radius:5px;
+                vertical-align:middle;
+                margin-right:8px;">
+            </span>
+            Multi-Layer Switch
+          </p>
+
+        </div>
+
+      </div>
+
+
+      <div class="card shadow-sm mt-3">
+
+        <div class="card-header">
           Link Status
         </div>
 
@@ -333,36 +405,99 @@ async function initializeTopology() {
           "text-halign": "center",
           "text-margin-y": 8,
 
-          "background-color": "#0d6efd",
           "color": "#000000",
 
-          "width": 65,
-          "height": 65,
+          "width": 58,
+          "height": 58,
 
           "font-size": "14px",
-          "font-weight": "bold"
+          "font-weight": "bold",
+
+          "border-width": 2,
+          "border-color": "#495057"
         }
       },
 
+      /*
+       * Host
+       * Gray square
+       */
       {
-        selector: 'node[id ^= "R"]',
+        selector: 'node[role = "Host"]',
         style: {
-          "shape": "round-rectangle"
+          "shape": "rectangle",
+          "background-color": "#6c757d",
+          "border-color": "#565e64",
+          "width": 50,
+          "height": 50
         }
       },
 
+      /*
+       * Router
+       * Green circle
+       */
       {
-        selector: 'node[id ^= "S"]',
-        style: {
-          "shape": "rectangle"
-        }
-      },
-
-      {
-        selector: 'node[id ^= "H"], node[id = "Web"]',
+        selector: 'node[role = "Router"]',
         style: {
           "shape": "ellipse",
-          "background-color": "#6c757d"
+          "background-color": "#198754",
+          "border-color": "#146c43",
+          "width": 60,
+          "height": 60
+        }
+      },
+
+      /*
+       * Layer-2 switch
+       * Light blue rounded rectangle
+       */
+      {
+        selector: 'node[role = "Switch"]',
+        style: {
+          "shape": "round-rectangle",
+          "background-color": "#4dabf7",
+          "border-color": "#339af0",
+          "width": 62,
+          "height": 58
+        }
+      },
+
+      /*
+       * Layer-3 / Multi-Layer switch
+       * Dark blue rounded rectangle
+       */
+      {
+        selector: 'node[role = "Multi-Layer Switch"]',
+        style: {
+          "shape": "round-rectangle",
+          "background-color": "#0d6efd",
+          "border-color": "#0a58ca",
+          "width": 62,
+          "height": 58
+        }
+      },
+
+      /*
+       * Fallback for any role not covered above.
+       */
+      {
+        selector: 'node[role = ""]',
+        style: {
+          "shape": "rectangle",
+          "background-color": "#adb5bd",
+          "border-color": "#6c757d"
+        }
+      },
+
+      /*
+       * Make selected devices easy to identify.
+       */
+      {
+        selector: "node:selected",
+        style: {
+          "border-width": 4,
+          "border-color": "#212529"
         }
       },
       
@@ -370,26 +505,38 @@ async function initializeTopology() {
         selector: "edge",
 
         style: {
-          "label":
-            "data(source_interface)",
+          /*
+           * Keep interface labels hidden by default.
+           * They are shown only while hovering over
+           * or selecting a link.
+           */
+          "label": "",
 
-          "font-size":
-            "9px",
+          "font-size": "10px",
+          "font-weight": "bold",
 
-          "width":
-            4,
+          "width": 4,
 
-          "curve-style":
-            "bezier",
+          "curve-style": "bezier",
 
-          "line-color":
-            "#6c757d",
+          "line-color": "#6c757d",
 
-          "text-background-color":
-            "#ffffff",
+          "text-background-color": "#ffffff",
+          "text-background-opacity": 0.92,
+          "text-background-padding": "3px",
 
-          "text-background-opacity":
-            0.8
+          "text-rotation": "autorotate",
+          "text-margin-y": -10
+        }
+      },
+
+      {
+        selector: "edge.hovered, edge:selected",
+
+        style: {
+          "label": "data(link_label)",
+          "z-index": 999,
+          "width": 6
         }
       },
 
@@ -439,6 +586,28 @@ async function initializeTopology() {
     }
 
   });
+
+
+  /*
+   * Show the full interface pair only while the user
+   * is hovering over a link. This keeps the topology
+   * readable when many links are close together.
+   */
+  cy.on(
+    "mouseover",
+    "edge",
+    function(event) {
+      event.target.addClass("hovered");
+    }
+  );
+
+  cy.on(
+    "mouseout",
+    "edge",
+    function(event) {
+      event.target.removeClass("hovered");
+    }
+  );
 
 
   /*
