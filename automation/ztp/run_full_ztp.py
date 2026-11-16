@@ -18,6 +18,7 @@ DAY2 = ROOT / "automation/day2/configure_existing.py"
 NETBOX = ROOT / "automation/netbox/register_ztp_devices.py"
 ROTATE_PASSWORD = ROOT / "automation/rotate_password.py"
 MONITORING_SYNC = ROOT / "automation/monitoring/sync_netbox_to_telegraf.py"
+CEOS_BOOTSTRAP = ROOT / "automation/ztp/init_ceos_bootstrap.py"
 
 STATE_DIR = ROOT / "automation/day2/state"
 STATE_FILE = STATE_DIR / "full_ztp.json"
@@ -31,6 +32,7 @@ DAY2_FILES = (
     ROOT / "automation/day2/configure_r5.py",
     ROOT / "automation/day2/configure_existing.py",
     ROOT / "automation/netbox/register_ztp_devices.py",
+    ROOT / "automation/ztp/init_ceos_bootstrap.py",
     ROOT / "automation/rotate_password.py",
     ROOT / "automation/monitoring/sync_netbox_to_telegraf.py",
 )
@@ -244,9 +246,20 @@ def execute_day2(apply, retry):
             "NetBox registration",
             [sys.executable, str(NETBOX)],
         )
-
         # ---------------------------------------------------------------
-        # 2. Fresh ContainerLab deployments may be back on vendor
+        # 2. Initialize bootstrap credential on fresh cEOS containers
+        #    that still have "username admin ... nopassword".
+        # ---------------------------------------------------------------
+        run_step(
+            "cEOS bootstrap initialization",
+            [
+                sys.executable,
+                str(CEOS_BOOTSTRAP),
+            ],
+            privileged=True,
+        )
+        # ---------------------------------------------------------------
+        # 3. Fresh ContainerLab deployments may be back on vendor
         #    bootstrap passwords even while /etc/nmas-secrets still
         #    contains passwords from the previous deployment.
         #
@@ -267,7 +280,7 @@ def execute_day2(apply, retry):
         )
 
         # ---------------------------------------------------------------
-        # 3. Regenerate Telegraf inputs from NetBox.
+        # 4. Regenerate Telegraf inputs from NetBox.
         # ---------------------------------------------------------------
         run_step(
             "NetBox-to-Telegraf sync",
@@ -279,7 +292,7 @@ def execute_day2(apply, retry):
         )
 
         # ---------------------------------------------------------------
-        # 4. Telegraf must restart after password rotation because
+        # 5. Telegraf must restart after password rotation because
         #    systemd EnvironmentFile values are read when the process
         #    starts. Restart also loads the newly generated input file.
         # ---------------------------------------------------------------

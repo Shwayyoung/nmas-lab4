@@ -1,0 +1,179 @@
+### /interface ethernet-1/4
+
+### /network-instance default
+    interface ethernet-1/1.0 {
+    }
+    interface ethernet-1/2.0 {
+    }
+    interface ethernet-1/3.0 {
+    }
+    interface lo0.0 {
+    }
+    protocols {
+        ospf {
+            instance ospfv2 {
+                admin-state enable
+                version ospf-v2
+                router-id 172.31.255.4
+                export-policy WEB-IPV4-IMPORT
+                asbr {
+                }
+                area 0.0.0.0 {
+                    interface ethernet-1/1.0 {
+                    }
+                    interface ethernet-1/2.0 {
+                    }
+                    interface lo0.0 {
+                    }
+                }
+            }
+            instance ospfv3 {
+                admin-state enable
+                version ospf-v3
+                address-family ipv6-unicast
+                router-id 172.31.255.4
+                export-policy WEB-IPV6-IMPORT
+                asbr {
+                }
+                area 0.0.0.0 {
+                    interface ethernet-1/1.0 {
+                    }
+                    interface ethernet-1/2.0 {
+                    }
+                    interface lo0.0 {
+                    }
+                }
+            }
+        }
+        bgp {
+            admin-state enable
+            autonomous-system 65000
+            router-id 172.31.255.4
+            afi-safi ipv4-unicast {
+                admin-state enable
+            }
+            afi-safi ipv6-unicast {
+                admin-state enable
+            }
+            group EBGP {
+                admin-state enable
+                afi-safi ipv4-unicast {
+                    admin-state enable
+                    export-policy [
+                        HOST-IPV4-EXPORT
+                    ]
+                    import-policy [
+                        WEB-IPV4-IMPORT
+                    ]
+                }
+                afi-safi ipv6-unicast {
+                    admin-state enable
+                    export-policy [
+                        HOST-IPV6-EXPORT
+                    ]
+                    import-policy [
+                        WEB-IPV6-IMPORT
+                    ]
+                }
+            }
+            neighbor 10.0.45.2 {
+                peer-as 65100
+                peer-group EBGP
+            }
+            neighbor 2001:db8:5840:45::5 {
+                peer-as 65100
+                peer-group EBGP
+            }
+        }
+    }
+
+### /routing-policy
+    prefix-set HOST-IPV4 {
+        prefix 192.168.10.0/24 mask-length-range 24..24 {
+        }
+        prefix 192.168.20.0/24 mask-length-range 24..24 {
+        }
+    }
+    prefix-set HOST-IPV6 {
+        prefix 2001:db8:5840:10::/64 mask-length-range 64..64 {
+        }
+        prefix 2001:db8:5840:20::/64 mask-length-range 64..64 {
+        }
+        prefix 2001:db8:5840:30::/64 mask-length-range 64..64 {
+        }
+    }
+    prefix-set WEB-IPV4 {
+        prefix 192.168.100.0/24 mask-length-range 24..24 {
+        }
+    }
+    prefix-set WEB-IPV6 {
+        prefix 2001:db8:5840:100::/64 mask-length-range 64..64 {
+        }
+    }
+    policy HOST-IPV4-EXPORT {
+        default-action {
+            policy-result reject
+        }
+        statement 10 {
+            match {
+                prefix {
+                    prefix-set HOST-IPV4
+                }
+            }
+            action {
+                policy-result accept
+            }
+        }
+    }
+    policy HOST-IPV6-EXPORT {
+        default-action {
+            policy-result reject
+        }
+        statement 10 {
+            match {
+                prefix {
+                    prefix-set HOST-IPV6
+                }
+            }
+            action {
+                policy-result accept
+            }
+        }
+    }
+    policy WEB-IPV4-IMPORT {
+        default-action {
+            policy-result reject
+        }
+        statement 10 {
+            match {
+                prefix {
+                    prefix-set WEB-IPV4
+                }
+            }
+            action {
+                policy-result accept
+                route-preference {
+                    set 140
+                }
+            }
+        }
+    }
+    policy WEB-IPV6-IMPORT {
+        default-action {
+            policy-result reject
+        }
+        statement 10 {
+            match {
+                prefix {
+                    prefix-set WEB-IPV6
+                }
+            }
+            action {
+                policy-result accept
+                route-preference {
+                    set 140
+                }
+            }
+        }
+    }
+
