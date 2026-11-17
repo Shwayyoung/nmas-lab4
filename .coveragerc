@@ -1,10 +1,14 @@
 [run]
 patch =
     subprocess
+
 parallel = True
+
 include =
     */automation/*.py
+    */automation/self_healing/*.py
     */web/*.py
+
 omit =
     */automation/credentials.py
 
@@ -12,6 +16,7 @@ omit =
 automation =
     automation/
     /tmp/pytest-of-*/pytest-*/test_*/automation/
+
 web =
     web/
 

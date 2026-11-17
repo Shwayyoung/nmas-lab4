@@ -1,0 +1,456 @@
+{% extends "base.html" %}
+
+
+{% block title %}
+Self-Healing | NMAS
+{% endblock %}
+
+
+{% block navbar_title %}
+Self-Healing
+{% endblock %}
+
+
+{% block content %}
+
+<div class="container-fluid">
+
+  <div
+    class="d-flex justify-content-between
+           align-items-center mb-4">
+
+    <div>
+
+      <h2 class="mb-1">
+        Self-Healing Incidents
+      </h2>
+
+      <p class="text-muted mb-0">
+        Automated detection, diagnosis,
+        remediation and verification.
+      </p>
+
+    </div>
+
+
+    <form
+      method="POST"
+      action="/self-healing/run">
+
+      <button
+        type="submit"
+        class="btn btn-primary">
+
+        Run Self-Healing
+
+      </button>
+
+    </form>
+
+  </div>
+
+
+  {% if escalated %}
+
+    <div
+      class="alert alert-danger shadow-sm"
+      role="alert">
+
+      <h4 class="alert-heading">
+        Engineer Attention Required
+      </h4>
+
+      <p>
+        Automatic remediation could not resolve
+        one or more incidents. Manual
+        troubleshooting is required.
+      </p>
+
+      <hr>
+
+
+      {% for incident in escalated %}
+
+        <div class="mb-3">
+
+          <strong>
+            {{ incident.source }}
+            {{ incident.source_interface }}
+            &harr;
+            {{ incident.target }}
+            {{ incident.target_interface }}
+          </strong>
+
+          <div>
+            Incident:
+            {{ incident.incident_id }}
+          </div>
+
+
+          {% if incident.troubleshooting_steps %}
+
+            <div class="mt-2">
+
+              <strong>
+                Recommended troubleshooting:
+              </strong>
+
+              <ul class="mb-0">
+
+                {% for step in
+                  incident.troubleshooting_steps %}
+
+                  <li>
+                    {{ step }}
+                  </li>
+
+                {% endfor %}
+
+              </ul>
+
+            </div>
+
+          {% endif %}
+
+        </div>
+
+      {% endfor %}
+
+    </div>
+
+  {% endif %}
+
+
+  <div class="row mb-4">
+
+    <div class="col-md-4">
+
+      <div class="card shadow-sm text-center">
+
+        <div class="card-body">
+
+          <h2 class="text-success">
+            {{ counts.HEALED }}
+          </h2>
+
+          <strong>
+            HEALED
+          </strong>
+
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <div class="col-md-4">
+
+      <div class="card shadow-sm text-center">
+
+        <div class="card-body">
+
+          <h2 class="text-danger">
+            {{ counts.ESCALATED }}
+          </h2>
+
+          <strong>
+            ESCALATED
+          </strong>
+
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <div class="col-md-4">
+
+      <div class="card shadow-sm text-center">
+
+        <div class="card-body">
+
+          <h2 class="text-warning">
+            {{ counts.DETECTED }}
+          </h2>
+
+          <strong>
+            ACTIVE / DETECTED
+          </strong>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+  {% if not incidents %}
+
+    <div class="alert alert-info">
+
+      No self-healing incidents have
+      been recorded.
+
+    </div>
+
+  {% endif %}
+
+
+  <div
+    class="accordion"
+    id="incidentAccordion">
+
+
+    {% for incident in incidents %}
+
+      <div class="accordion-item">
+
+        <h2
+          class="accordion-header"
+          id="heading{{ loop.index }}">
+
+          <button
+            class="accordion-button collapsed"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#incident{{ loop.index }}">
+
+
+            {% if incident.status == "HEALED" %}
+
+              <span
+                class="badge bg-success me-3">
+
+                HEALED
+
+              </span>
+
+
+            {% elif
+              incident.status == "ESCALATED" %}
+
+              <span
+                class="badge bg-danger me-3">
+
+                ESCALATED
+
+              </span>
+
+
+            {% else %}
+
+              <span
+                class="badge bg-warning
+                       text-dark me-3">
+
+                {{ incident.status }}
+
+              </span>
+
+            {% endif %}
+
+
+            <strong>
+
+              {{ incident.source }}
+              {{ incident.source_interface }}
+
+              &harr;
+
+              {{ incident.target }}
+              {{ incident.target_interface }}
+
+            </strong>
+
+          </button>
+
+        </h2>
+
+
+        <div
+          id="incident{{ loop.index }}"
+          class="accordion-collapse collapse"
+          data-bs-parent="#incidentAccordion">
+
+          <div class="accordion-body">
+
+            <table class="table table-sm">
+
+              <tr>
+
+                <th>
+                  Incident ID
+                </th>
+
+                <td>
+                  {{ incident.incident_id }}
+                </td>
+
+              </tr>
+
+
+              <tr>
+
+                <th>
+                  Issue Type
+                </th>
+
+                <td>
+                  {{ incident.issue_type }}
+                </td>
+
+              </tr>
+
+
+              <tr>
+
+                <th>
+                  Detected
+                </th>
+
+                <td>
+                  {{ incident.detected_at }}
+                </td>
+
+              </tr>
+
+
+              <tr>
+
+                <th>
+                  Cable
+                </th>
+
+                <td>
+                  {{ incident.cable_id }}
+                </td>
+
+              </tr>
+
+
+              <tr>
+
+                <th>
+                  Initial State
+                </th>
+
+                <td>
+
+                  {{ incident.source }}
+                  {{ incident.source_interface }}
+                  =
+                  {{ incident.source_state }}
+
+                  /
+
+                  {{ incident.target }}
+                  {{ incident.target_interface }}
+                  =
+                  {{ incident.target_state }}
+
+                </td>
+
+              </tr>
+
+            </table>
+
+
+            <h6>
+              Detection / Diagnosis
+            </h6>
+
+            <ul>
+
+              {% for step in
+                incident.troubleshooting_steps %}
+
+                <li>
+                  {{ step }}
+                </li>
+
+              {% else %}
+
+                <li class="text-muted">
+                  No troubleshooting
+                  steps recorded.
+                </li>
+
+              {% endfor %}
+
+            </ul>
+
+
+            <h6>
+              Remediation
+            </h6>
+
+            <ul>
+
+              {% for action in
+                incident.remediation_actions %}
+
+                <li>
+                  {{ action }}
+                </li>
+
+              {% else %}
+
+                <li class="text-muted">
+                  No automatic remediation
+                  was performed.
+                </li>
+
+              {% endfor %}
+
+            </ul>
+
+
+            <h6>
+              Verification
+            </h6>
+
+            <ul>
+
+              {% for result in
+                incident.verification %}
+
+                <li>
+                  {{ result }}
+                </li>
+
+              {% else %}
+
+                <li class="text-muted">
+                  No verification result
+                  recorded.
+                </li>
+
+              {% endfor %}
+
+            </ul>
+
+
+            <small class="text-muted">
+
+              Incident documentation:
+              {{ incident.report_file }}
+
+            </small>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    {% endfor %}
+
+  </div>
+
+</div>
+
+{% endblock %}

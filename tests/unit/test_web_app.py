@@ -447,7 +447,7 @@ def test_topology_api_success(client):
 
     assert result.status_code == 200
     assert result.get_json() == topology
-    assert mock.call_args.kwargs["timeout"] == 20
+    assert mock.call_args.kwargs["timeout"] == 5
 
 
 def test_topology_api_failure(client):
@@ -488,20 +488,70 @@ def test_config_change_reports(client, tmp_path, monkeypatch):
     assert b"R1" in response.data
     assert b"R3" in response.data
 
+def test_run_health_check_route(client):
 
-@pytest.mark.parametrize("route,script,redirect_path", [
-    ("/health/run", "health_check.py", "/health"),
-    ("/config-changes/run", "config_change.py", "/config-changes"),
-])
-def test_run_automation_routes(client, route, script, redirect_path):
-    with patch.object(web_app.subprocess, "run") as mock_run:
-        response = client.post(route)
+    with patch.object(
+        web_app.subprocess,
+        "run",
+    ) as mock_run:
+
+        response = client.post(
+            "/health/run"
+        )
 
     assert response.status_code == 302
-    assert response.headers["Location"].endswith(redirect_path)
+
+    assert response.headers[
+        "Location"
+    ].endswith(
+        "/health"
+    )
+
     mock_run.assert_called_once()
 
     args = mock_run.call_args
-    assert args.args[0][-2].endswith(script)
-    assert args.args[0][-1] == "--all"
-    assert args.kwargs["check"] is False
+
+    command = args.args[0]
+
+    assert (
+        "/usr/local/sbin/nmas-health-check"
+        in command
+    )
+
+def test_run_config_change_route(client):
+
+    with patch.object(
+        web_app.subprocess,
+        "run",
+    ) as mock_run:
+
+        response = client.post(
+            "/config-changes/run"
+        )
+
+    assert response.status_code == 302
+
+    assert response.headers[
+        "Location"
+    ].endswith(
+        "/config-changes"
+    )
+
+    mock_run.assert_called_once()
+
+    args = mock_run.call_args
+
+    command = args.args[0]
+
+    assert (
+        command[-2].endswith(
+            "config_change.py"
+        )
+    )
+
+    assert command[-1] == "--all"
+
+    assert (
+        args.kwargs["check"]
+        is False
+    )

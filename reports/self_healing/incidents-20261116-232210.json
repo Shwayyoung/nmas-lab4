@@ -1,0 +1,34 @@
+{
+  "generated_at": "2026-11-16T23:22:10.443537+00:00",
+  "count": 1,
+  "incidents": [
+    {
+      "incident_id": "interface-down-cable-24",
+      "issue_type": "interface_down",
+      "status": "HEALED",
+      "source": "R6",
+      "source_interface": "Ethernet2",
+      "source_state": "down",
+      "target": "R7",
+      "target_interface": "Ethernet1",
+      "target_state": "down",
+      "cable_id": 24,
+      "detected_at": "2026-11-16T23:21:47.274572+00:00",
+      "troubleshooting_steps": [
+        "Confirmed the link exists in the intended topology.",
+        "Observed R6 Ethernet2=down.",
+        "Observed R7 Ethernet1=down.",
+        "Checking R6 Ethernet2 through management-plane SSH.",
+        "R6 Ethernet2 is administratively shutdown."
+      ],
+      "remediation_actions": [
+        "Attempting to enable R6 Ethernet2.",
+        "Enabled R6 Ethernet2."
+      ],
+      "verification": [
+        "Verification attempt 1: link is still down.",
+        "Interface telemetry returned to UP."
+      ]
+    }
+  ]
+}

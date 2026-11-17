@@ -20,7 +20,10 @@ pipeline {
         stage('Python Syntax') {
             steps {
                 sh '''
-                    python3 -m py_compile automation/*.py web/*.py
+                    find automation web \
+                        -name "*.py" \
+                        -print0 \
+                        | xargs -0 python3 -m py_compile
                 '''
             }
         }

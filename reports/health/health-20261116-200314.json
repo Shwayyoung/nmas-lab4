@@ -1,0 +1,197 @@
+[
+  {
+    "device": "R1",
+    "management_ip": "172.20.20.6",
+    "platform": "arista",
+    "timestamp": "2026-11-16T20:03:08.237629+00:00",
+    "connectivity": {
+      "status": "pass",
+      "reachable": true
+    },
+    "ssh": {
+      "status": "fail",
+      "error": "[Errno 13] Permission denied: '/etc/nmas-secrets'"
+    },
+    "overall": "unhealthy"
+  },
+  {
+    "device": "R2",
+    "management_ip": "172.20.20.4",
+    "platform": "arista",
+    "timestamp": "2026-11-16T20:03:08.250546+00:00",
+    "connectivity": {
+      "status": "pass",
+      "reachable": true
+    },
+    "ssh": {
+      "status": "fail",
+      "error": "[Errno 13] Permission denied: '/etc/nmas-secrets'"
+    },
+    "overall": "unhealthy"
+  },
+  {
+    "device": "R3",
+    "management_ip": "172.20.20.14",
+    "platform": "nokia",
+    "timestamp": "2026-11-16T20:03:08.133602+00:00",
+    "connectivity": {
+      "status": "pass",
+      "reachable": true
+    },
+    "ssh": {
+      "status": "fail",
+      "error": "[Errno 13] Permission denied: '/etc/nmas-secrets'"
+    },
+    "overall": "unhealthy"
+  },
+  {
+    "device": "R4",
+    "management_ip": "172.20.20.12",
+    "platform": "nokia",
+    "timestamp": "2026-11-16T20:03:08.454296+00:00",
+    "connectivity": {
+      "status": "pass",
+      "reachable": true
+    },
+    "ssh": {
+      "status": "fail",
+      "error": "[Errno 13] Permission denied: '/etc/nmas-secrets'"
+    },
+    "overall": "unhealthy"
+  },
+  {
+    "device": "R5",
+    "management_ip": "172.20.20.7",
+    "platform": "nokia",
+    "timestamp": "2026-11-16T20:03:08.424640+00:00",
+    "connectivity": {
+      "status": "pass",
+      "reachable": true
+    },
+    "ssh": {
+      "status": "fail",
+      "error": "[Errno 13] Permission denied: '/etc/nmas-secrets'"
+    },
+    "overall": "unhealthy"
+  },
+  {
+    "device": "R6",
+    "management_ip": "172.20.20.16",
+    "platform": "arista",
+    "timestamp": "2026-11-16T20:03:08.330380+00:00",
+    "connectivity": {
+      "status": "pass",
+      "reachable": true
+    },
+    "ssh": {
+      "status": "fail",
+      "error": "[Errno 13] Permission denied: '/etc/nmas-secrets'"
+    },
+    "overall": "unhealthy"
+  },
+  {
+    "device": "R7",
+    "management_ip": "172.20.20.17",
+    "platform": "arista",
+    "timestamp": "2026-11-16T20:03:10.484933+00:00",
+    "connectivity": {
+      "status": "pass",
+      "reachable": true
+    },
+    "ssh": {
+      "status": "fail",
+      "error": "[Errno 13] Permission denied: '/etc/nmas-secrets'"
+    },
+    "overall": "unhealthy"
+  },
+  {
+    "device": "R8",
+    "management_ip": "172.20.20.19",
+    "platform": "arista",
+    "timestamp": "2026-11-16T20:03:10.772231+00:00",
+    "connectivity": {
+      "status": "pass",
+      "reachable": true
+    },
+    "ssh": {
+      "status": "fail",
+      "error": "[Errno 13] Permission denied: '/etc/nmas-secrets'"
+    },
+    "overall": "unhealthy"
+  },
+  {
+    "device": "S1",
+    "management_ip": "172.20.20.2",
+    "platform": "arista",
+    "timestamp": "2026-11-16T20:03:10.704990+00:00",
+    "connectivity": {
+      "status": "pass",
+      "reachable": true
+    },
+    "ssh": {
+      "status": "fail",
+      "error": "[Errno 13] Permission denied: '/etc/nmas-secrets'"
+    },
+    "overall": "unhealthy"
+  },
+  {
+    "device": "S2",
+    "management_ip": "172.20.20.13",
+    "platform": "arista",
+    "timestamp": "2026-11-16T20:03:10.767407+00:00",
+    "connectivity": {
+      "status": "pass",
+      "reachable": true
+    },
+    "ssh": {
+      "status": "fail",
+      "error": "[Errno 13] Permission denied: '/etc/nmas-secrets'"
+    },
+    "overall": "unhealthy"
+  },
+  {
+    "device": "S3",
+    "management_ip": "172.20.20.3",
+    "platform": "arista",
+    "timestamp": "2026-11-16T20:03:10.900829+00:00",
+    "connectivity": {
+      "status": "pass",
+      "reachable": true
+    },
+    "ssh": {
+      "status": "fail",
+      "error": "[Errno 13] Permission denied: '/etc/nmas-secrets'"
+    },
+    "overall": "unhealthy"
+  },
+  {
+    "device": "S4",
+    "management_ip": "172.20.20.8",
+    "platform": "arista",
+    "timestamp": "2026-11-16T20:03:10.757364+00:00",
+    "connectivity": {
+      "status": "pass",
+      "reachable": true
+    },
+    "ssh": {
+      "status": "fail",
+      "error": "[Errno 13] Permission denied: '/etc/nmas-secrets'"
+    },
+    "overall": "unhealthy"
+  },
+  {
+    "device": "S5",
+    "management_ip": "172.20.20.20",
+    "platform": "arista",
+    "timestamp": "2026-11-16T20:03:12.743234+00:00",
+    "connectivity": {
+      "status": "pass",
+      "reachable": true
+    },
+    "ssh": {
+      "status": "fail",
+      "error": "[Errno 13] Permission denied: '/etc/nmas-secrets'"
+    },
+    "overall": "unhealthy"
+  }
+]

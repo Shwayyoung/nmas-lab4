@@ -1,0 +1,8 @@
+{
+  "device": "R6",
+  "timestamp": "20261117-014005",
+  "changed": false,
+  "golden": "/home/student/labs/nmas-lab4/golden/R6/R6-latest.cfg",
+  "generated": "/home/student/labs/nmas-lab4/configs/generated/R6.cfg",
+  "diff": ""
+}

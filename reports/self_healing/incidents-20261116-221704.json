@@ -1,0 +1,37 @@
+{
+  "generated_at": "2026-11-16T22:17:04.548925+00:00",
+  "count": 1,
+  "incidents": [
+    {
+      "incident_id": "device-unreachable-R6",
+      "issue_type": "device_unreachable",
+      "status": "ESCALATED",
+      "source": "R6",
+      "source_interface": "Management",
+      "source_state": "unreachable",
+      "target": "",
+      "target_interface": "",
+      "target_state": "",
+      "cable_id": null,
+      "detected_at": "2026-11-16T22:16:51.799969+00:00",
+      "troubleshooting_steps": [
+        "Management IP 172.20.20.16 did not respond to ICMP.",
+        "Management-plane reachability failure detected.",
+        "ICMP management-plane reachability check failed.",
+        "Management-plane SSH connection failed: timed out",
+        "Verify that the device is powered on and the network OS is running.",
+        "Verify management network connectivity to the device.",
+        "Verify the management interface IP address and gateway.",
+        "Verify that the SSH service is running and reachable.",
+        "Check device or container logs for startup or service failures."
+      ],
+      "remediation_actions": [
+        "Automatic configuration recovery could not be performed because the device was unreachable through SSH.",
+        "Automatic device/container restart was not performed because power or container recovery is outside the approved self-healing scope."
+      ],
+      "verification": [
+        "Management-plane SSH connectivity remained unavailable."
+      ]
+    }
+  ]
+}

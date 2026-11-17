@@ -21,6 +21,9 @@ HEALTH_REPORT = Path(
 CONFIG_CHANGE_DIR = Path(
     "/home/student/labs/nmas-lab4/reports/config_changes"
 )
+SELF_HEALING_DIR = Path(
+    "/home/student/labs/nmas-lab4/reports/self_healing"
+)
 
 def valid_hostname(name):
     return bool(re.fullmatch(r"[A-Za-z0-9_-]+", name))
@@ -518,15 +521,27 @@ def health_dashboard():
 @app.route("/health/run", methods=["POST"])
 def run_health_check():
 
-    subprocess.run(
+    result = subprocess.run(
         [
-            "/usr/bin/python3",
-            "/home/student/labs/nmas-lab4/automation/health_check.py",
-            "--all",
+            "sudo",
+            "-n",
+            "/usr/local/sbin/nmas-health-check",
         ],
         cwd="/home/student/labs/nmas-lab4",
-        check=False,
+        capture_output=True,
+        text=True,
     )
+
+    if result.returncode != 0:
+        flash(
+            f"Health check failed: {result.stderr or result.stdout}",
+            "danger",
+        )
+    else:
+        flash(
+            "Health check completed successfully.",
+            "success",
+        )
 
     return redirect(
         url_for("health_dashboard")
@@ -572,6 +587,205 @@ def run_config_changes():
 
     return redirect(
         url_for("config_changes")
+    )
+
+@app.route("/self-healing")
+def self_healing():
+
+    incidents = []
+
+    # -----------------------------------------------------
+    # Historical incidents
+    # -----------------------------------------------------
+
+    if SELF_HEALING_DIR.exists():
+
+        files = sorted(
+            SELF_HEALING_DIR.glob(
+                "incidents-*.json"
+            ),
+            reverse=True,
+        )
+
+        for path in files:
+
+            # latest is current state,
+            # not historical documentation.
+            if (
+                path.name
+                == "incidents-latest.json"
+            ):
+                continue
+
+            try:
+
+                with path.open() as f:
+                    report = json.load(f)
+
+                for incident in report.get(
+                    "incidents",
+                    [],
+                ):
+
+                    incident["report_file"] = (
+                        path.name
+                    )
+
+                    incidents.append(
+                        incident
+                    )
+
+            except Exception:
+                continue
+
+
+    # -----------------------------------------------------
+    # Historical counters
+    # -----------------------------------------------------
+
+    counts = {
+
+        "HEALED": sum(
+            1
+            for item in incidents
+            if item.get("status")
+            == "HEALED"
+        ),
+
+        "ESCALATED": sum(
+            1
+            for item in incidents
+            if item.get("status")
+            == "ESCALATED"
+        ),
+
+        "DETECTED": sum(
+            1
+            for item in incidents
+            if item.get("status")
+            == "DETECTED"
+        ),
+    }
+
+
+    # -----------------------------------------------------
+    # CURRENT active/escalated incidents
+    #
+    # Only incidents-latest.json controls the
+    # engineer notification.
+    # -----------------------------------------------------
+
+    active_escalated = []
+
+    latest_report = (
+        SELF_HEALING_DIR
+        / "incidents-latest.json"
+    )
+
+    if latest_report.exists():
+
+        try:
+
+            with latest_report.open() as f:
+                latest = json.load(f)
+
+            active_escalated = [
+                item
+                for item
+                in latest.get(
+                    "incidents",
+                    [],
+                )
+                if item.get("status")
+                == "ESCALATED"
+            ]
+
+        except Exception:
+            active_escalated = []
+
+
+    return render_template(
+        "self_healing.html",
+        incidents=incidents,
+        counts=counts,
+        escalated=active_escalated,
+    )
+
+@app.route(
+    "/self-healing/run",
+    methods=["POST"],
+)
+def run_self_healing():
+
+    try:
+
+        result = subprocess.run(
+            [
+                "sudo",
+                "-n",
+                "/usr/local/sbin/nmas-self-healing",
+                "--once",
+            ],
+            cwd="/home/student/labs/nmas-lab4",
+            capture_output=True,
+            text=True,
+            timeout=60,
+        )
+
+    except subprocess.TimeoutExpired:
+
+        flash(
+            "Self-healing timed out after 60 seconds.",
+            "danger",
+        )
+
+        return redirect(
+            url_for("self_healing")
+        )
+
+    if result.returncode != 0:
+
+        message = (
+            result.stderr.strip()
+            or result.stdout.strip()
+            or "Unknown error"
+        )
+
+        flash(
+            f"Self-healing execution failed: {message}",
+            "danger",
+        )
+
+    else:
+
+        output = result.stdout
+
+        if "ESCALATED" in output:
+
+            flash(
+                "Self-healing completed, but an incident "
+                "requires engineer attention.",
+                "danger",
+            )
+
+        elif "HEALED" in output:
+
+            flash(
+                "Self-healing completed successfully. "
+                "The detected incident was healed.",
+                "success",
+            )
+
+        else:
+
+            flash(
+                "Self-healing completed. "
+                "No actionable incidents detected.",
+                "success",
+            )
+
+    return redirect(
+        url_for("self_healing")
     )
 
 if __name__ == "__main__":

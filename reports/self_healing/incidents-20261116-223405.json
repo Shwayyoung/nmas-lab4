@@ -1,0 +1,54 @@
+{
+  "generated_at": "2026-11-16T22:34:05.081718+00:00",
+  "count": 2,
+  "incidents": [
+    {
+      "incident_id": "interface-down-cable-23",
+      "issue_type": "interface_down",
+      "status": "ESCALATED",
+      "source": "R4",
+      "source_interface": "ethernet-1/4",
+      "source_state": "down",
+      "target": "R6",
+      "target_interface": "Ethernet1",
+      "target_state": "up",
+      "cable_id": 23,
+      "detected_at": "2026-11-16T22:33:59.998937+00:00",
+      "troubleshooting_steps": [
+        "Confirmed the link exists in the intended topology.",
+        "Observed R4 ethernet-1/4=down.",
+        "Observed R6 Ethernet1=up.",
+        "Checking R4 ethernet-1/4 through management-plane SSH.",
+        "R4 ethernet-1/4 is operationally down but not administratively shutdown.",
+        "No supported automatic remediation was identified.",
+        "Verify interface configuration, physical connectivity and peer state."
+      ],
+      "remediation_actions": [],
+      "verification": []
+    },
+    {
+      "incident_id": "interface-down-cable-24",
+      "issue_type": "interface_down",
+      "status": "ESCALATED",
+      "source": "R6",
+      "source_interface": "Ethernet2",
+      "source_state": "up",
+      "target": "R7",
+      "target_interface": "Ethernet1",
+      "target_state": "down",
+      "cable_id": 24,
+      "detected_at": "2026-11-16T22:33:59.998969+00:00",
+      "troubleshooting_steps": [
+        "Confirmed the link exists in the intended topology.",
+        "Observed R6 Ethernet2=up.",
+        "Observed R7 Ethernet1=down.",
+        "Checking R7 Ethernet1 through management-plane SSH.",
+        "R7 Ethernet1 is operationally down but not administratively shutdown.",
+        "No supported automatic remediation was identified.",
+        "Verify interface configuration, physical connectivity and peer state."
+      ],
+      "remediation_actions": [],
+      "verification": []
+    }
+  ]
+}
