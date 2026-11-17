@@ -341,7 +341,8 @@ def read_channel(
 def run_shell_command(
     channel,
     command,
-    timeout=8,
+    timeout=15,
+    idle_timeout=0.5,
 ):
     """
     Send one interactive CLI command and wait until
@@ -372,7 +373,7 @@ def run_shell_command(
             if (
                 output
                 and
-                time.monotonic() - last_data > 0.5
+                time.monotonic() - last_data > idle_timeout
             ):
 
                 clean = ANSI_ESCAPE.sub(
@@ -518,6 +519,8 @@ def check_nokia(device):
                     "neighbor"
                 ),
                 #delay=1.5,
+                timeout=20,
+                idle_timeout=2.0,
             )
         )
 
